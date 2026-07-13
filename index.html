@@ -2,686 +2,328 @@
 <html lang="en">  
 <head>  
     <meta charset="UTF-8">  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>Outbound FC Roster and attendance Analytics</title>  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">  
+    <title>Outbound FC Roster Finder</title>  
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>  
         :root {  
-            --primary-color: #D32F2F; 
-            --primary-hover: #B71C1C;  
-            --bg-color: #f8f9fa;  
-            --card-bg: #ffffff;  
-            --text-main: #202124;  
-            --text-muted: #5f6368;  
-            --border-color: #dadce0;  
+            --ios-blue: #007AFF; 
+            --ios-blue-hover: #0056B3;
+            --ios-red: #FF3B30;  
+            --ios-green: #34C759;
+            --ios-orange: #FF9500;
+            --ios-purple: #AF52DE;
+            --ios-bg: #F2F2F7;  
+            --ios-card-bg: rgba(255, 255, 255, 0.85);  
+            --ios-text-main: #1C1C1E;  
+            --ios-text-muted: #8E8E93;  
+            --ios-border: rgba(0, 0, 0, 0.08);  
             
             /* Shift Colors */  
             --color-ds: #4F6D7A;      
             --color-dso: #37474F;     
-            --color-ns: #3F51B5;      
-            --color-nso: #283593;     
-            --color-ms: #2E7D32;      
-            --color-off: #C62828;     
-            --color-leave: #6A1B9A;   
-            --color-pending: #78909C;  
-            --color-other: #546E7A;   
+            --color-ns: #5856D6;      
+            --color-nso: #3634A3;     
+            --color-ms: #34C759;      
+            --color-off: #FF3B30;     
+            --color-leave: #AF52DE;   
+            --color-pending: #8E8E93;  
+            --color-other: #64D2FF;   
             --color-present: #FFCCB6;  
             --text-present: #5d4037;   
-            --color-absent: #FFCDD2;
-            --text-absent: #B71C1C;
+            --color-absent: #FFD1D1;
+            --text-absent: #D70015;
         }  
 
         * {  
             margin: 0;  
             padding: 0;  
             box-sizing: border-box;  
-            font-family: 'Segoe UI', Roboto, Arial, sans-serif;  
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;  
+            -webkit-font-smoothing: antialiased;
         }  
 
         body {  
-            background-image: url('1000520411.jpg');
-            background-size: cover;
-            background-position: center;
+            background-color: var(--ios-bg);  
+            background-image: radial-gradient(at 0% 0%, rgba(0, 122, 255, 0.1) 0px, transparent 50%), 
+                              radial-gradient(at 100% 100%, rgba(255, 59, 48, 0.08) 0px, transparent 50%);
             background-attachment: fixed;
-            background-repeat: no-repeat;
-            background-color: var(--bg-color);  
-            color: var(--text-main);  
+            color: var(--ios-text-main);  
             overflow-x: hidden;  
+            padding-bottom: 40px;
         }  
 
+        /* iOS Frosted Glass Header */
         header {  
-            background: rgba(255, 255, 255, 0.95);  
-            color: var(--text-main);  
-            padding: 14px 20px;  
+            background: rgba(242, 242, 247, 0.8);  
+            backdrop-filter: saturate(180%) blur(20px);  
+            -webkit-backdrop-filter: saturate(180%) blur(20px);  
+            color: var(--ios-text-main);  
+            padding: 16px 20px;  
             display: flex;  
             justify-content: center;
             align-items: center;  
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);  
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 0.5px solid var(--ios-border);
             position: sticky;
             top: 0;
             z-index: 100;  
         }  
 
         .header-title {  
-            font-size: 20px;  
-            font-weight: 600;  
-            color: var(--primary-color);
+            font-size: 18px;  
+            font-weight: 700;  
+            letter-spacing: -0.4px;
+            color: var(--ios-text-main);
         }  
 
-        /* Double Slot Sub-Header Tabs */
-        .slot-bar {
-            background: #fff;
-            display: flex;
-            border-bottom: 3px solid var(--primary-color);
+        /* iOS Segmented Control Tabs */
+        .slot-bar-wrapper {
+            padding: 12px 16px;
+            background: transparent;
             position: sticky;
             top: 53px;
             z-index: 99;
         }
 
+        .slot-bar {
+            background: rgba(118, 118, 128, 0.12);
+            display: flex;
+            border-radius: 9px;
+            padding: 3px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
         .slot-tab {
             flex: 1;
             text-align: center;
-            padding: 14px 0;
-            font-size: 16px;
+            padding: 8px 0;
+            font-size: 13px;
             font-weight: 600;
-            color: var(--text-muted);
+            color: var(--ios-text-main);
             cursor: pointer;
-            transition: all 0.2s ease;
-            border-bottom: 3px solid transparent;
-            margin-bottom: -3px;
-        }
-
-        .slot-tab:hover {
-            color: var(--primary-color);
-            background: #f8f9fa;
+            border-radius: 7px;
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
         .slot-tab.active {
-            color: var(--primary-color);
-            border-bottom: 3px solid var(--primary-color);
-            background: #fff5f5;
+            background: #ffffff;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), 0 3px 1px rgba(0, 0, 0, 0.04);
+            color: var(--ios-blue);
         }
 
-        /* View Screens Visibility */
-        .view-screen {
-            display: none;
-        }
+        .view-screen { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        .view-screen.active { display: block; opacity: 1; }
 
-        .view-screen.active {
-            display: block;
-        }
-
-        /* Login & Auth Module Style */
-        .auth-container {
-            max-width: 400px;
-            margin: 40px auto;
-            padding: 30px;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-        }
-
-        .auth-title {
-            font-size: 22px;
-            font-weight: 600;
+        /* iOS Card Component */
+        .container { max-width: 850px; margin: auto; padding: 10px 16px; }  
+        
+        .card {  
+            background: var(--ios-card-bg);  
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            padding: 24px;  
+            border-radius: 20px;  
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);  
             margin-bottom: 20px;
-            color: #333;
-            text-align: center;
-        }
+        }  
 
-        .auth-form-group {
-            margin-bottom: 16px;
-        }
-
-        .auth-form-group label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: #444;
-        }
-
-        .auth-input {
+        /* Form Controls */
+        .search-container { display: flex; flex-direction: column; gap: 14px; }  
+        
+        input {  
             width: 100%;
-            padding: 12px;
+            padding: 14px 16px;  
+            font-size: 16px;  
+            border-radius: 12px;  
+            border: 1px solid var(--ios-border);  
+            outline: none;  
+            background: rgba(118, 118, 128, 0.08);  
+            color: var(--ios-text-main);
+            transition: all 0.2s ease;
+        }  
+        input:focus {
+            background: #fff;
+            border-color: var(--ios-blue);
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.15);
+        }
+
+        button.ios-btn {  
+            width: 100%;  
+            padding: 14px;  
+            background: var(--ios-blue);  
+            color: #fff;  
+            border: none;  
+            border-radius: 14px;  
+            font-size: 16px;  
+            font-weight: 600;  
+            cursor: pointer;  
+            transition: transform 0.1s ease, background 0.2s ease;
+            box-shadow: 0 4px 14px rgba(0, 122, 255, 0.25);
+        }  
+        button.ios-btn:active { transform: scale(0.97); }
+        button.ios-btn:disabled { background: var(--ios-text-muted); box-shadow: none; cursor: not-allowed; }  
+        button.ios-btn-red { background: var(--ios-red); box-shadow: 0 4px 14px rgba(255, 59, 48, 0.25); }
+        button.ios-btn-green { background: var(--ios-green); box-shadow: 0 4px 14px rgba(52, 199, 89, 0.25); }
+
+        /* Auth Container */
+        .auth-container {
+            max-width: 380px;
+            margin: 30px auto;
+            padding: 30px 24px;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+            border: 1px solid var(--ios-border);
+        }
+
+        .auth-title { font-size: 22px; font-weight: 700; margin-bottom: 20px; text-align: center; letter-spacing: -0.5px; }
+        .auth-form-group { margin-bottom: 16px; }
+        .auth-form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--ios-text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .auth-links { display: flex; justify-content: space-between; margin-top: 18px; font-size: 14px; }
+        .auth-link-btn { background: none; border: none; color: var(--ios-blue); cursor: pointer; font-weight: 600; }
+
+        /* Calendar Roster UI */
+        .employeeName { font-size: 24px; font-weight: 700; color: var(--ios-text-main); margin-bottom: 4px; letter-spacing: -0.5px; }  
+        .employeeId { color: var(--ios-text-muted); font-size: 14px; margin-bottom: 20px; border-bottom: 1px solid var(--ios-border); padding-bottom: 15px; display: flex; justify-content: space-between; font-weight: 500; }  
+
+        .calendar-header-grid, .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }  
+        .calendar-header-grid { margin-bottom: 8px; text-align: center; font-weight: 600; color: var(--ios-text-muted); font-size: 12px; text-transform: uppercase; }  
+        .weekday-label { padding: 4px 0; }  
+        
+        .day { padding: 10px 4px; border-radius: 12px; text-align: center; font-weight: 700; color: white; min-height: 72px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }  
+        .blank-day { background: transparent; border-radius: 12px; }  
+        .day-date { font-size: 15px; font-weight: 800; opacity: 0.95; margin-bottom: 4px; }  
+        .shift-code { font-size: 13px; font-weight: 600; }  
+
+        /* Admin & Ops Panels */
+        .admin-panel-section {
+            background: #ffffff;
+            border-radius: 20px;
+            border: 1px solid var(--ios-border);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .admin-section-header {
+            background: rgba(242, 242, 247, 0.6);
+            padding: 16px 20px;
             font-size: 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            background: #fff;
-            outline: none;
-        }
-
-        .auth-links {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 15px;
-            font-size: 13px;
-        }
-
-        .auth-link-btn {
-            background: none;
-            border: none;
-            color: var(--primary-color);
-            text-decoration: underline;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        .password-preview-box {
-            background: #e8f0fe;
-            border: 1px dashed #1a73e8;
-            padding: 10px;
-            border-radius: 6px;
-            margin-top: 8px;
-            font-size: 13px;
-            color: #1a73e8;
-            word-break: break-all;
-        }
-
-        /* Admin Management Panel styling */
-        .admin-panel-card {
-            background: #fff;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .admin-header-title {
-            font-size: 16px;
             font-weight: 700;
-            border-bottom: 2px solid #37474F;
-            padding-bottom: 8px;
-            margin-bottom: 15px;
-            color: #37474F;
-        }
-
-        .approval-row {
+            border-bottom: 1px solid var(--ios-border);
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 10px 12px;
-            background: #f1f3f4;
-            border-radius: 6px;
-            margin-bottom: 8px;
+            justify-content: space-between;
         }
 
-        .action-btn-group {
-            display: flex;
-            gap: 8px;
-        }
+        .admin-list-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .admin-list-table th { text-align: left; padding: 12px 16px; background: rgba(118, 118, 128, 0.05); color: var(--ios-text-muted); font-weight: 600; font-size: 12px; text-transform: uppercase; }
+        .admin-list-table td { padding: 14px 16px; border-bottom: 1px solid var(--ios-border); vertical-align: middle; }
+
+        .admin-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .badge-pending { background: #FFF5E5; color: #FF9500; }
+        .badge-active { background: #E5F9E7; color: #34C759; }
 
         .action-mini-btn {
             padding: 6px 12px;
+            border-radius: 10px;
             border: none;
-            border-radius: 4px;
+            color: #fff;
             font-size: 12px;
             font-weight: 600;
             cursor: pointer;
-            color: #fff;
+            transition: opacity 0.2s;
         }
+        .action-mini-btn:hover { opacity: 0.85; }
 
-        /* Ops Controls Dashboard Grid */
-        .ops-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 16px;
-            margin-bottom: 25px;
-        }
-
+        /* Ops Menu Grid */
+        .ops-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 25px; }
+        
         .ops-menu-card {
             background: #fff;
             padding: 20px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .ops-menu-card:hover {
-            transform: translateY(-3px);
-            border-color: var(--primary-color);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .ops-icon-frame {
-            font-size: 28px;
-            width: 50px;
-            height: 50px;
-            background: #fff5f5;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .ops-card-label {
-            font-size: 15px;
-            font-weight: 600;
-            color: #202124;
-        }
-
-        /* Premium Modal Window */
-        .modal-window {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0.9);
-            background: var(--card-bg);
-            width: 95%;
-            max-width: 500px;
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-            z-index: 1005;
-            display: none;
-            opacity: 0;
-            transition: all 0.3s ease;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-        }
-
-        .modal-window.active {
-            display: block;
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-        }
-
-        .modal-header {
-            background: #f1f3f4;
-            padding: 16px 20px;
-            font-weight: 600;
-            font-size: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .modal-body {
-            padding: 20px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        /* 3P Table Specific Professional Styling */
-        .report-modal-window {
-            max-width: 950px;
-            width: 98%;
-        }
-
-        .table-responsive-wrapper {
-            width: 100%;
-            overflow-x: auto;
-            margin-bottom: 15px;
-            border-radius: 4px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .threep-report-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-            text-align: center;
-            background: #fff;
-            min-width: 800px;
-        }
-
-        .threep-report-table th, .threep-report-table td {
-            border: 1px solid #111;
-            padding: 8px 6px;
-            font-weight: 600;
-        }
-
-        .threep-title-header {
-            background: #000;
-            color: #fff;
-            font-size: 18px;
-            letter-spacing: 1px;
-        }
-
-        .threep-subtitle-header {
-            background: #00E5FF;
-            color: #000;
-            font-size: 14px;
-        }
-
-        .threep-blue-header {
-            background: #0D47A1;
-            color: #fff;
-        }
-
-        .threep-row-ops { background: #E8F5E9; }
-        .threep-row-yellow { background: #FFFDE7; }
-        .threep-row-pink { background: #FFEBEE; color: #C62828; }
-
-        /* Glassmorphism Popup Styles */
-        .glass-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            z-index: 2000;
-            display: none;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .glass-popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0.85);
-            width: 90%;
-            max-width: 450px;
-            max-height: 70vh;
-            background: rgba(255, 255, 255, 0.65);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-            z-index: 2001;
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .glass-overlay.active, .glass-popup.active {
-            display: flex;
-            opacity: 1;
-        }
-        .glass-popup.active {
-            transform: translate(-50%, -50%) scale(1);
-        }
-
-        .glass-header {
-            padding: 16px 20px;
-            font-weight: 700;
-            font-size: 16px;
-            color: #1a1a1a;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .glass-close {
-            font-size: 26px;
-            background: none;
-            border: none;
-            color: #333;
-            cursor: pointer;
-            line-height: 1;
-        }
-
-        .glass-body {
-            padding: 15px 20px;
-            overflow-y: auto;
-            flex: 1;
-        }
-
-        .emp-list-item {
-            background: rgba(255, 255, 255, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 12px 14px;
-            border-radius: 10px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 14px;
-            font-weight: 600;
-            color: #222;
-        }
-        .emp-list-item span {
-            font-size: 12px;
-            font-weight: normal;
-            color: #333;
-            background: rgba(255, 255, 255, 0.7);
-            padding: 2px 8px;
             border-radius: 20px;
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-
-        /* Shift Selection Buttons Grid */
-        .shift-selection-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-
-        .shift-select-btn {
-            padding: 14px;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            background: #fff;
+            border: 1px solid var(--ios-border);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
             cursor: pointer;
-            text-align: center;
-            transition: all 0.2s;
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
             display: flex;
-            flex-direction: column;
-            gap: 4px;
             align-items: center;
+            gap: 16px;
         }
-
-        .shift-select-btn:hover {
-            border-color: var(--primary-color);
-            background-color: #f4f8fe;
-            color: var(--primary-color);
-        }
-
-        .month-calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .month-btn {
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            background: #fff;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            text-align: center;
-            color: var(--text-main);
-            transition: all 0.2s;
-        }
-
-        .month-btn:hover {
-            background: #e8f0fe;
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-        }
-
-        /* Advanced Analytics Cards Design */
-        .analytics-output-container {
-            margin-top: 15px;
-            border-top: 1px solid var(--border-color);
-            padding-top: 15px;
-        }
-
-        .shift-report-card {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-        }
+        .ops-menu-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); border-color: var(--ios-blue); }
         
-        .shift-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #fff;
-            display: flex;
-            justify-content: space-between;
-            background: var(--primary-color);
-            padding: 12px 14px;
-        }
+        .ops-icon-frame { font-size: 26px; width: 52px; height: 52px; background: rgba(0, 122, 255, 0.1); border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+        .ops-card-label { font-size: 16px; font-weight: 700; color: var(--ios-text-main); }
 
-        .ops-metrics-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding: 15px;
+        /* iOS Modal Styling */
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); z-index: 1000; display: none; opacity: 0; transition: opacity 0.3s; }
+        .sidebar-overlay.active { display: block; opacity: 1; }
+        
+        .modal-window {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.92);
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            width: 92%; max-width: 480px; border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            z-index: 1005; display: none; opacity: 0; transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            overflow: hidden; border: 1px solid rgba(255,255,255,0.8);
         }
+        .modal-window.active { display: block; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        
+        .modal-header { padding: 18px 22px; font-weight: 700; font-size: 17px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ios-border); background: rgba(242,242,247,0.5); }
+        .close-btn { background: rgba(118,118,128,0.15); border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 18px; cursor: pointer; color: var(--ios-text-muted); display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .modal-body { padding: 22px; max-height: 80vh; overflow-y: auto; }
 
+        .report-modal-window { max-width: 900px; width: 96%; }
+
+        /* Ops Metrics Rows */
+        .shift-report-card { background: #fff; border-radius: 18px; border: 1px solid var(--ios-border); overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        .shift-title { font-size: 15px; font-weight: 700; color: #fff; display: flex; justify-content: space-between; background: var(--ios-blue); padding: 14px 18px; }
+        .ops-metrics-list { display: flex; flex-direction: column; gap: 10px; padding: 16px; }
+        
         .ops-metric-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 14px;
-            background: #f1f3f4;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
-            border-left: 4px solid #78909c;
-            cursor: pointer;
-            transition: transform 0.2s, background-color 0.2s;
+            display: flex; justify-content: space-between; align-items: center; padding: 14px 16px;
+            background: var(--ios-bg); border-radius: 14px; font-size: 15px; font-weight: 600;
+            border-left: 5px solid var(--ios-text-muted); cursor: pointer; transition: transform 0.15s, background 0.2s;
         }
+        .ops-metric-row:active { transform: scale(0.98); }
+        .ops-metric-row.highlight-blue { border-left-color: var(--ios-blue); background: rgba(0, 122, 255, 0.08); }
+        .ops-metric-row.highlight-green { border-left-color: var(--ios-green); background: rgba(52, 199, 89, 0.08); }
+        .ops-metric-row.highlight-red { border-left-color: var(--ios-red); background: rgba(255, 59, 48, 0.08); }
+        .ops-metric-row.highlight-purple { border-left-color: var(--ios-purple); background: rgba(175, 82, 222, 0.08); }
+        .ops-metric-row.highlight-orange { border-left-color: var(--ios-orange); background: rgba(255, 149, 0, 0.08); }
+        .ops-metric-row span { font-size: 18px; font-weight: 800; }
 
-        .ops-metric-row:hover {
-            transform: scale(1.02);
-            background-color: #e2e4e6;
-        }
+        /* Employee List Glass Popup */
+        .emp-list-item { background: #fff; border: 1px solid var(--ios-border); padding: 14px 16px; border-radius: 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 700; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+        .emp-list-item span { font-size: 13px; font-weight: 600; color: var(--ios-blue); background: rgba(0,122,255,0.1); padding: 4px 10px; border-radius: 20px; }
 
-        .ops-metric-row.highlight-blue { border-left-color: #1a73e8; background: #f4f8fe; font-weight: 600; }
-        .ops-metric-row.highlight-blue:hover { background-color: #e3edfc; }
-        
-        .ops-metric-row.highlight-green { border-left-color: #2e7d32; background: #e8f5e9; font-weight: bold; }
-        .ops-metric-row.highlight-green:hover { background-color: #dbf0dc; }
-        
-        .ops-metric-row.highlight-red { border-left-color: #c62828; background: #fdeaea;}
-        .ops-metric-row.highlight-red:hover { background-color: #fbd5d5; }
-        
-        .ops-metric-row.highlight-purple { border-left-color: #6a1b9a; background: #f3e5f5; }
-        .ops-metric-row.highlight-purple:hover { background-color: #ebd3f1; }
-        
-        .ops-metric-row.highlight-orange { border-left-color: #e67e22; background: #fff3e0; }
-        .ops-metric-row.highlight-orange:hover { background-color: #ffe6cc; }
+        /* 3P Table */
+        .table-responsive-wrapper { width: 100%; overflow-x: auto; margin-bottom: 16px; border-radius: 14px; border: 1px solid var(--ios-border); }
+        .threep-report-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; background: #fff; min-width: 750px; }
+        .threep-report-table th, .threep-report-table td { border: 1px solid var(--ios-border); padding: 10px 8px; font-weight: 600; }
+        .threep-title-header { background: #1C1C1E; color: #fff; font-size: 16px; font-weight: 700; }
+        .threep-subtitle-header th { background: var(--ios-bg); color: var(--ios-text-main); }
+        .threep-blue-header { background: rgba(0, 122, 255, 0.1) !important; color: var(--ios-blue) !important; font-weight: 700; }
 
-        .ops-metric-row span {
-            font-size: 16px;
-            font-weight: 700;
-        }
-
-        /* Toast UI */
+        /* iOS Toast Notification */
         .toast-container {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background-color: #323232;
-            color: #ffffff;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 14px;
-            z-index: 2010;
-            opacity: 0;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: rgba(28, 28, 30, 0.9); backdrop-filter: blur(10px); color: #ffffff;
+            padding: 14px 24px; border-radius: 50px; font-size: 14px; font-weight: 600; z-index: 2010;
+            opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             pointer-events: none;
         }
+        .toast-container.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-        .toast-container.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
+        /* Shift Select Grid */
+        .shift-selection-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
+        .shift-select-btn { padding: 16px; font-size: 15px; font-weight: 700; border-radius: 16px; border: 1px solid var(--ios-border); background: #fff; cursor: pointer; text-align: center; transition: all 0.2s; display: flex; flex-direction: column; gap: 6px; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+        .shift-select-btn:active { transform: scale(0.96); border-color: var(--ios-blue); background: rgba(0,122,255,0.05); color: var(--ios-blue); }
 
-        /* Layout Main Body UI */  
-        .container {  
-            max-width: 900px;  
-            margin: auto;  
-            padding: 20px 15px;  
-        }  
-
-        .card {  
-            background: var(--card-bg);  
-            padding: 24px;  
-            border-radius: 8px;  
-            border: 1px solid var(--border-color);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);  
-        }  
-
-        .search-container {  
-            display: flex;  
-            flex-direction: column;  
-            gap: 16px;  
-        }  
-
-        .form-row {  
-            display: flex;  
-            gap: 12px;  
-        }  
-
-        input, select {  
-            padding: 12px 16px;  
-            font-size: 15px;  
-            border-radius: 6px;  
-            border: 1px solid var(--border-color);  
-            outline: none;  
-            background-color: #fff;  
-        }  
-
-        input { flex: 2; }  
-        select {  
-            flex: 1;  
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%235f6368' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");
-            background-repeat: no-repeat;
-            background-position: right 14px center;
-            padding-right: 35px;
-        }  
-
-        select:disabled { background-color: #f1f3f4; cursor: not-allowed; color: #80868b; }
-
-        button.search-btn {  
-            width: 100%;  
-            padding: 12px;  
-            background: var(--primary-color);  
-            color: #fff;  
-            border: none;  
-            border-radius: 6px;  
-            font-size: 16px;  
-            font-weight: 500;  
-            cursor: pointer;  
-        }  
-
-        button.search-btn:disabled { background: #ccdecb; color: #80868b; }  
-
-        #result { margin-top: 20px; }  
-
-        .employeeName { font-size: 22px; font-weight: 600; color: var(--primary-color); margin-bottom: 6px; }  
-        .employeeId { color: var(--text-muted); font-size: 14px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; display: flex; justify-content: space-between; }  
-
-        .calendar-header-grid, .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }  
-        .calendar-header-grid { margin-bottom: 6px; text-align: center; font-weight: 600; color: var(--text-muted); font-size: 13px; }  
-        .weekday-label { padding: 6px 0; background: #f1f3f4; border-radius: 4px; }  
-        
-        .day { padding: 10px 4px; border-radius: 6px; text-align: center; font-weight: bold; color: white; min-height: 70px; display: flex; flex-direction: column; justify-content: center; align-items: center; }  
-        .blank-day { background: #f8f9fa; border: 1px dashed var(--border-color); border-radius: 6px; }  
-        .day-date { font-size: 12px; font-weight: normal; opacity: 0.9;}  
-        .shift-code { font-size: 14px; }  
-        .updating-text { font-size: 10px; font-weight: normal; }  
-
+        /* Background colors for shifts */
         .ds { background-color: var(--color-ds); }  
         .dso { background-color: var(--color-dso); }  
         .ns { background-color: var(--color-ns); }  
@@ -693,41 +335,29 @@
         .other { background-color: var(--color-other); }  
         .present { background-color: var(--color-present); color: var(--text-present) !important; }  
         .absent-day { background-color: var(--color-absent); color: var(--text-absent) !important; }
-
-        @media(max-width: 600px) {  
-            .form-row { flex-direction: column; }  
-            .calendar-header-grid { font-size: 11px; }  
-            .day { min-height: 60px; }  
-        }  
     </style>
 </head>  
 <body>  
 
 <header>
-    <div class="header-title">Outbound FC Operations Portal</div>
+    <div class="header-title">Outbound FC Portal</div>
 </header>  
 
-<div class="slot-bar">
-    <div class="slot-tab active" id="slotEmp" onclick="switchSlot('Employee')">👤 Employee View</div>
-    <div class="slot-tab" id="slotOps" onclick="switchSlot('Ops')">⚙️ Ops Controls</div>
+<div class="slot-bar-wrapper">
+    <div class="slot-bar">
+        <div class="slot-tab active" id="slotEmp" onclick="switchSlot('Employee')">👤 Employee View</div>
+        <div class="slot-tab" id="slotOps" onclick="switchSlot('Ops')">⚙️ Ops Controls</div>
+    </div>
 </div>
 
 <div id="screenEmployee" class="view-screen active">
     <div class="container">  
         <div class="card">  
             <div class="search-container">  
-                <div class="form-row">
-                    <input id="empid" type="text" placeholder="Enter Employee BA ID">  
-                    <select id="monthSelect">
-                        <option value="0">January</option><option value="1">February</option>
-                        <option value="2">March</option><option value="3">April</option>
-                        <option value="4">May</option><option value="5">June</option>
-                        <option value="6">July</option><option value="7">August</option>
-                        <option value="8">September</option><option value="9">October</option>
-                        <option value="10">November</option><option value="11">December</option>
-                    </select>
+                <div>
+                    <input id="empid" type="text" placeholder="Enter Employee BA ID" autocomplete="off" style="text-align: center; font-weight: 600; font-size: 18px;">  
                 </div>
-                <button id="searchBtn" class="search-btn" onclick="searchRoster()" disabled>Search Roster</button>  
+                <button id="searchBtn" class="ios-btn" onclick="searchRoster()">Search Roster</button>  
             </div>  
         </div>  
         <div id="result"></div>  
@@ -735,43 +365,66 @@
 </div>
 
 <div id="screenAuthGate" class="view-screen">
-    <div class="auth-container" id="authBox">
-        </div>
+    <div class="auth-container" id="authBox"></div>
 </div>
 
 <div id="screenOpsDashboard" class="view-screen">
     <div class="container">
-        <div id="adminApprovalSection" class="admin-panel-card" style="display: none;">
-            <div class="admin-header-title">🛡️ Admin Authorization Hub (Pending Approvals)</div>
-            <div id="adminQueueBody">
-                </div>
+        
+        <div id="adminApprovalSection" style="display: none;">
             
-            <div class="admin-header-title" style="margin-top: 25px;">👥 Approved Active Users (Manage Access)</div>
-            <div id="adminActiveUsersBody">
+            <div class="admin-panel-section">
+                <div class="admin-section-header">
+                    <span>🛡️ Pending Registration Requests</span>
                 </div>
+                <div style="padding: 10px; overflow-x: auto;">
+                    <table class="admin-list-table">
+                        <thead>
+                            <tr><th>User ID</th><th>Status</th><th style="text-align: right;">Actions</th></tr>
+                        </thead>
+                        <tbody id="adminQueueBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="admin-panel-section">
+                <div class="admin-section-header">
+                    <span>👥 Approved System Users</span>
+                    <button class="action-mini-btn" style="background:var(--ios-purple);" onclick="openAdminSecurityModal()">🔑 Admin Credentials</button>
+                </div>
+                <div style="padding: 10px; overflow-x: auto;">
+                    <table class="admin-list-table">
+                        <thead>
+                            <tr><th>User ID</th><th>Status</th><th style="text-align: right;">Actions</th></tr>
+                        </thead>
+                        <tbody id="adminActiveUsersBody"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 id="opsDashboardTitle" style="font-size: 18px; font-weight: 600; color:#37474F;">Operational Intelligence Dashboards</h2>
-            <button class="action-mini-btn" style="background:#546E7A;" onclick="logoutOps()">🔒 Terminate Session</button>
+        <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 18px 20px;">
+            <div>
+                <h2 id="opsDashboardTitle" style="font-size: 17px; font-weight: 700;">Operations Desk</h2>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button class="action-mini-btn" style="background:var(--ios-blue); padding: 8px 14px;" onclick="openPasswordChangeModal()">🔑 Change Pass</button>
+                <button class="action-mini-btn" style="background:var(--ios-red); padding: 8px 14px;" onclick="logoutOps()">🔒 Logout</button>
+            </div>
         </div>
 
         <div class="ops-grid">
-            <div class="ops-menu-card" onclick="openHistoryModal()">
-                <div class="ops-icon-frame">📅</div>
-                <div class="ops-card-label">View History Roster</div>
-            </div>
             <div class="ops-menu-card" onclick="openShiftSelectionModal()">
                 <div class="ops-icon-frame">📊</div>
-                <div class="ops-card-label">Shift wise attendance</div>
+                <div class="ops-card-label">Shift Attendance</div>
             </div>
             <div class="ops-menu-card" onclick="openDayWiseModal()">
                 <div class="ops-icon-frame">📆</div>
-                <div class="ops-card-label">Day wise attendance</div>
+                <div class="ops-card-label">Day Wise Attendance</div>
             </div>
             <div class="ops-menu-card" onclick="openThreePModal()">
                 <div class="ops-icon-frame">📋</div>
-                <div class="ops-card-label">3P Attendance Summary</div>
+                <div class="ops-card-label">3P Summary Matrix</div>
             </div>
             <div class="ops-menu-card" onclick="openMandaysModal()">
                 <div class="ops-icon-frame">⚙️</div>
@@ -781,37 +434,85 @@
     </div>
 </div>
 
-<div class="sidebar-overlay" id="modalOverlay" onclick="closeHistoryModal()"></div>
-<div class="modal-window" id="historyModal">
+<div class="sidebar-overlay" id="firstLoginOverlay"></div>
+<div class="modal-window" id="firstLoginModal" style="z-index: 3000;">
     <div class="modal-header">
-        <span>Select Roster Month</span>
-        <button class="close-btn" onclick="closeHistoryModal()">&times;</button>
+        <span>🔒 Mandatory Security Setup</span>
     </div>
     <div class="modal-body">
-        <div class="month-calendar-grid">
-            <button class="month-btn" onclick="selectHistoryMonth(0)">Jan</button>
-            <button class="month-btn" onclick="selectHistoryMonth(1)">Feb</button>
-            <button class="month-btn" onclick="selectHistoryMonth(2)">Mar</button>
-            <button class="month-btn" onclick="selectHistoryMonth(3)">Apr</button>
-            <button class="month-btn" onclick="selectHistoryMonth(4)">May</button>
-            <button class="month-btn" onclick="selectHistoryMonth(5)">Jun</button>
-            <button class="month-btn" onclick="selectHistoryMonth(6)">Jul</button>
-            <button class="month-btn" onclick="selectHistoryMonth(7)">Aug</button>
-            <button class="month-btn" onclick="selectHistoryMonth(8)">Sep</button>
-            <button class="month-btn" onclick="selectHistoryMonth(9)">Oct</button>
-            <button class="month-btn" onclick="selectHistoryMonth(10)">Nov</button>
-            <button class="month-btn" onclick="selectHistoryMonth(11)">Dec</button>
+        <p style="font-size: 14px; color: var(--ios-text-muted); margin-bottom: 16px; line-height: 1.4;">
+            আপনার একাউন্টটি সবেমাত্র অ্যাপ্রুভ হয়েছে। নিরাপত্তার স্বার্থে প্রথমবার প্রবেশের জন্য আপনার নিজস্ব একটি নতুন সিক্রেট পাসওয়ার্ড সেট করুন।
+        </p>
+        <div class="auth-form-group">
+            <label>Set New Permanent Password</label>
+            <input type="password" id="firstLoginNewPass" placeholder="Minimum 6 characters">
         </div>
-        <div class="current-month-indicator" style="margin-top:15px; text-align:center;">
-            <button class="quick-btn" style="background:none; border:none; color:var(--primary-color); font-weight:600; text-decoration:underline; cursor:pointer;" onclick="resetToCurrentMonth()">Go to Current Month</button>
+        <button class="ios-btn ios-btn-green" style="margin-top: 10px;" onclick="executeFirstLoginPasswordSet()">Save & Continue</button>
+    </div>
+</div>
+
+<div class="sidebar-overlay" id="passwordChangeOverlay" onclick="closePasswordChangeModal()"></div>
+<div class="modal-window" id="passwordChangeModal">
+    <div class="modal-header">
+        <span>🔑 Update Profile Password</span>
+        <button class="close-btn" onclick="closePasswordChangeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+        <div class="auth-form-group">
+            <label>Current Password</label>
+            <input type="password" id="oldPassInput" placeholder="Type current password">
         </div>
+        <div class="auth-form-group">
+            <label>New Password</label>
+            <input type="password" id="newPassInput" placeholder="Minimum 6 characters">
+        </div>
+        <button class="ios-btn" style="margin-top: 10px;" onclick="executePasswordChange()">Save New Password</button>
+    </div>
+</div>
+
+<div class="sidebar-overlay" id="adminEditUserOverlay" onclick="closeAdminEditUserModal()"></div>
+<div class="modal-window" id="adminEditUserModal">
+    <div class="modal-header">
+        <span>⚙️ Edit User Credentials</span>
+        <button class="close-btn" onclick="closeAdminEditUserModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+        <input type="hidden" id="editTargetOriginalUid">
+        <div class="auth-form-group">
+            <label>User ID</label>
+            <input type="text" id="editTargetNewUid" placeholder="Enter User ID">
+        </div>
+        <div class="auth-form-group">
+            <label>New Password</label>
+            <input type="text" id="editTargetNewPass" placeholder="Set New Password">
+        </div>
+        <button class="ios-btn ios-btn-green" style="margin-top: 10px;" onclick="executeAdminUserUpdate()">Update Credentials</button>
+    </div>
+</div>
+
+<div class="sidebar-overlay" id="adminSecurityOverlay" onclick="closeAdminSecurityModal()"></div>
+<div class="modal-window" id="adminSecurityModal">
+    <div class="modal-header">
+        <span>🛡️ Master Admin Credentials</span>
+        <button class="close-btn" onclick="closeAdminSecurityModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+        <div class="auth-form-group">
+            <label>New Master Admin ID</label>
+            <input type="text" id="newAdminIdInput" placeholder="e.g. superadmin">
+        </div>
+        <div class="auth-form-group">
+            <label>New Master Admin Password</label>
+            <input type="text" id="newAdminPassInput" placeholder="Set strong password">
+        </div>
+        <button class="ios-btn ios-btn-red" style="margin-top: 10px;" onclick="executeUpdateMasterAdmin()">Update Master Security</button>
     </div>
 </div>
 
 <div class="sidebar-overlay" id="shiftOverlay" onclick="closeShiftModal()"></div>
 <div class="modal-window" id="shiftModal">
     <div class="modal-header">
-        <span>📊 Ops Shift wise attendance</span>
+        <span>📊 Shift Wise Attendance</span>
         <button class="close-btn" onclick="closeShiftModal()">&times;</button>
     </div>
     <div class="modal-body">
@@ -821,29 +522,29 @@
             <button class="shift-select-btn" onclick="calculateOpsShiftReport('Day')">☀️ <span>Day</span></button>
             <button class="shift-select-btn" onclick="calculateOpsShiftReport('Night')">🌙 <span>Night</span></button>
         </div>
-        <div id="shiftResultContainer" class="analytics-output-container" style="display: none;"></div>
+        <div id="shiftResultContainer" style="display: none; margin-top: 16px;"></div>
     </div>
 </div>
 
 <div class="sidebar-overlay" id="daywiseOverlay" onclick="closeDayWiseModal()"></div>
-<div class="modal-window" id="daywiseModal" style="max-width: 550px; width: 95%;">
+<div class="modal-window" id="daywiseModal" style="max-width: 520px;">
     <div class="modal-header">
-        <span>📅 Day Wise Attendance History</span>
+        <span>📅 Day Wise Attendance</span>
         <button class="close-btn" onclick="closeDayWiseModal()">&times;</button>
     </div>
     <div class="modal-body">
-        <div id="daywiseResultContainer" class="analytics-output-container" style="display: none; margin-top: 0; padding-top: 0;"></div>
+        <div id="daywiseResultContainer" style="display: none;"></div>
     </div>
 </div>
 
 <div class="sidebar-overlay" id="mandaysOverlay" onclick="closeMandaysModal()"></div>
-<div class="modal-window" id="mandaysModal" style="max-width: 500px; width: 95%;">
+<div class="modal-window" id="mandaysModal">
     <div class="modal-header">
         <span>⚙️ Mandays Summary</span>
         <button class="close-btn" onclick="closeMandaysModal()">&times;</button>
     </div>
     <div class="modal-body">
-        <div id="mandaysResultContainer" class="analytics-output-container" style="display: none; margin-top: 0; padding-top: 0;"></div>
+        <div id="mandaysResultContainer" style="display: none;"></div>
     </div>
 </div>
 
@@ -857,58 +558,56 @@
         <div class="table-responsive-wrapper" id="threepPrintArea">
             <table class="threep-report-table" id="threepTable">
                 <thead>
-                    <tr>
-                        <th colspan="7" class="threep-title-header" id="threepTitleDate">3p Attendance As on 02-Jul-2026</th>
-                    </tr>
+                    <tr><th colspan="7" class="threep-title-header" id="threepTitleDate">3p Attendance</th></tr>
                     <tr class="threep-subtitle-header">
                         <th style="width:20%;">Pick + QC</th>
-                        <th class="threep-blue-header">Morning<br>(7AM to 04 PM)</th>
-                        <th class="threep-blue-header">General<br>(09 AM to 06 PM)</th>
-                        <th class="threep-blue-header">Day<br>(11 AM to 08 PM)</th>
-                        <th class="threep-blue-header">Day Shift Part Timer<br>(04 PM to 08:30 PM)</th>
-                        <th class="threep-blue-header">Night<br>(8PM to 05AM)</th>
-                        <th class="threep-blue-header" style="background:#111;">Total</th>
+                        <th class="threep-blue-header">Morning<br>(7AM to 4PM)</th>
+                        <th class="threep-blue-header">General<br>(9AM to 6PM)</th>
+                        <th class="threep-blue-header">Day<br>(11AM to 8PM)</th>
+                        <th class="threep-blue-header">Part Timer<br>(4PM to 8:30PM)</th>
+                        <th class="threep-blue-header">Night<br>(8PM to 5AM)</th>
+                        <th class="threep-blue-header" style="background:#1C1C1E; color:#fff !important;">Total</th>
                     </tr>
                 </thead>
-                <tbody id="threepTableBody">
-                </tbody>
+                <tbody id="threepTableBody"></tbody>
             </table>
         </div>
-        <button class="search-btn" style="background:#2E7D32;" onclick="downloadThreePReportAsImage()">📥 Download 3p Attendance (JPG)</button>
+        <button class="ios-btn ios-btn-green" onclick="downloadThreePReportAsImage()">📥 Download 3P Report (JPG)</button>
     </div>
 </div>
 
-<div class="glass-overlay" id="glassOverlay" onclick="closeGlassPopup()"></div>
-<div class="glass-popup" id="glassPopup">
-    <div class="glass-header">
+<div class="sidebar-overlay" id="glassOverlay" onclick="closeGlassPopup()"></div>
+<div class="modal-window" id="glassPopup" style="max-width: 420px; z-index: 2005;">
+    <div class="modal-header">
         <span id="glassPopupTitle">Employee List</span>
-        <button class="glass-close" onclick="closeGlassPopup()">&times;</button>
+        <button class="close-btn" onclick="closeGlassPopup()">&times;</button>
     </div>
-    <div class="glass-body" id="glassPopupBody">
-    </div>
+    <div class="modal-body" id="glassPopupBody" style="max-height: 60vh;"></div>
 </div>
 
 <div class="toast-container" id="toastBox"><span id="toastText"></span></div>
 
 <script>  
     const BASE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQnIS1j49dSQiOC-PjeKJSq7MIf0dnM7hW5deAJU6WgjSkDB0DFi92Z4C3kKvtXv2Awd_tZ5w6mftFg/pub?gid=0&single=true&output=csv";   
+    const SHEETDB_URL = "https://sheetdb.io/api/v1/fso1c1e5ml8wu"; 
+    
     let roster = [];  
     let targetYear = new Date().getFullYear();
 
-    let colMap = { id: 2, ba: 3, name: 4, days: {} };
-    let activeLists = { rosterPlan:[], weekOff:[], leave:[], scheduledOps:[], stillInPlan:[], absent:[], present:[] };
+    let colMap = { id: 2, ba: 2, name: 4, days: {} };
+    for (let d = 1; d <= 31; d++) { colMap.days[d] = 11 + (d - 1); }
 
-    // LOCAL STORAGE SYSTEM ARCHITECTURE
-    let usersDB = JSON.parse(localStorage.getItem('ops_users_db')) || { "imrul": { password: "imrul@123" } };
-    let pendingApprovals = JSON.parse(localStorage.getItem('ops_pending_db')) || {}; 
+    let activeLists = { rosterPlan:[], weekOff:[], leave:[], scheduledOps:[], stillInPlan:[], absent:[], present:[] };
     let currentSessionUser = null;
 
-    function saveStorage() {
-        localStorage.setItem('ops_users_db', JSON.stringify(usersDB));
-        localStorage.setItem('ops_pending_db', JSON.stringify(pendingApprovals));
+    // Secure Master Admin Credentials stored in LocalStorage for persistence
+    function getAdminCredentials() {
+        return {
+            uid: localStorage.getItem("master_admin_id") || "admin",
+            pass: localStorage.getItem("master_admin_pass") || "admin@123"
+        };
     }
 
-    // View Switching Controls Matrix
     function switchSlot(targetSlot) {
         document.getElementById("slotEmp").classList.remove("active");
         document.getElementById("slotOps").classList.remove("active");
@@ -932,21 +631,20 @@
         }
     }
 
-    // Dynamic Auth View Engine
     function renderAuthView(mode) {
         const authBox = document.getElementById("authBox");
         if(mode === 'login') {
             authBox.innerHTML = `
-                <div class="auth-title">🔐 Operational Authentication</div>
+                <div class="auth-title">🔐 Ops Authentication</div>
                 <div class="auth-form-group">
                     <label>User ID</label>
-                    <input type="text" id="authUid" class="auth-input" placeholder="Enter User ID">
+                    <input type="text" id="authUid" placeholder="Enter User ID" autocomplete="off">
                 </div>
                 <div class="auth-form-group">
                     <label>Password</label>
-                    <input type="password" id="authPass" class="auth-input" placeholder="Password">
+                    <input type="password" id="authPass" placeholder="Password">
                 </div>
-                <button class="search-btn" onclick="executeLogin()">Access Ops Desk</button>
+                <button class="ios-btn" onclick="executeLogin()">Access Dashboard</button>
                 <div class="auth-links">
                     <button class="auth-link-btn" onclick="renderAuthView('forgot')">Forgot Password?</button>
                     <button class="auth-link-btn" onclick="renderAuthView('create')">Create User ID</button>
@@ -954,125 +652,318 @@
             `;
         } else if(mode === 'create') {
             authBox.innerHTML = `
-                <div class="auth-title">📝 Register User Identity</div>
+                <div class="auth-title">📝 Register New User</div>
                 <div class="auth-form-group">
                     <label>Desired User ID</label>
-                    <input type="text" id="regUid" class="auth-input" placeholder="e.g. Imrul" oninput="updatePasswordPreview(this.value)">
+                    <input type="text" id="regUid" placeholder="e.g. Imrul" autocomplete="off">
                 </div>
                 <div class="auth-form-group">
-                    <label>Assigned Password (Auto Generated)</label>
-                    <div class="password-preview-box" id="passPreview">Awaiting User ID input...</div>
+                    <label>Choose Password</label>
+                    <input type="password" id="regPass" placeholder="Enter security password">
                 </div>
-                <p style="font-size:11px; color:var(--text-muted); margin-bottom:15px; line-height:1.3;">*Note: This credentials profile requires structural verification and approval from the master administrator before access is granted.</p>
-                <button class="search-btn" style="background:#2E7D32;" onclick="executeRegistration()">Submit Registration Request</button>
+                <p style="font-size:12px; color:var(--ios-text-muted); margin-bottom:16px; line-height:1.4;">*Note: Your profile requires administrative verification before operational access is granted.</p>
+                <button class="ios-btn ios-btn-green" onclick="executeRegistration()">Submit Request</button>
                 <div class="auth-links" style="justify-content: center;">
                     <button class="auth-link-btn" onclick="renderAuthView('login')">Return to Sign In</button>
                 </div>
             `;
         } else if(mode === 'forgot') {
             authBox.innerHTML = `
-                <div class="auth-title">🔍 Credential Extraction</div>
+                <div class="auth-title">🔒 Password Recovery</div>
+                <p style="font-size:13px; color:var(--ios-text-muted); margin-bottom:16px; line-height:1.4;">নিরাপত্তার স্বার্থে অন্যের পাসওয়ার্ড দেখা বা রিসেট করা নিষিদ্ধ। আপনার পাসওয়ার্ড ভুলে গেলে আপনার User ID লিখে রিকোয়েস্ট পাঠান অথবা সরাসরি অ্যাডমিনের সাথে যোগাযোগ করুন।</p>
                 <div class="auth-form-group">
                     <label>Enter Registered User ID</label>
-                    <input type="text" id="forgotUid" class="auth-input" placeholder="Enter User ID">
+                    <input type="text" id="forgotUid" placeholder="Enter User ID" autocomplete="off">
                 </div>
-                <div id="forgotResponseContainer"></div>
-                <button class="search-btn" onclick="executeForgotPasswordRecovery()">Recover Password</button>
-                <div class="auth-links" style="justify-content: center; margin-top:15px;">
+                <div id="forgotResponseContainer" style="margin-bottom:14px;"></div>
+                <button class="ios-btn" onclick="executeForgotPasswordRecovery()">Check Status</button>
+                <div class="auth-links" style="justify-content: center; margin-top:16px;">
                     <button class="auth-link-btn" onclick="renderAuthView('login')">Return to Sign In</button>
                 </div>
             `;
         }
     }
 
-    function updatePasswordPreview(val) {
-        const preview = document.getElementById("passPreview");
-        const sanitized = val.trim();
-        if(sanitized.length > 0) {
-            preview.innerText = `Generated Password: ${sanitized}@123`;
-        } else {
-            preview.innerText = "Awaiting User ID input...";
-        }
-    }
-
-    function executeLogin() {
+    async function executeLogin() {
         const uid = document.getElementById("authUid").value.trim().toLowerCase();
         const pass = document.getElementById("authPass").value;
 
         if(!uid || !pass) { showToast("⚠️ All fields required!"); return; }
 
-        // Hardcoded Master Admin Override Bypass Access Route
-        if(uid === "admin" && pass === "admin@123") {
+        const adminCreds = getAdminCredentials();
+        if(uid === adminCreds.uid.toLowerCase() && pass === adminCreds.pass) {
             currentSessionUser = "MASTER_ADMIN";
             showToast("🛡️ Master Session Authorized");
             switchSlot('Ops');
             return;
         }
 
-        if(usersDB[uid]) {
-            if(usersDB[uid].password === pass) {
-                currentSessionUser = uid;
-                showToast("✓ Authentication Successful");
-                switchSlot('Ops');
+        showToast("🔄 Authenticating via Database...");
+
+        try {
+            let response = await fetch(`${SHEETDB_URL}/search?UserID=${uid}`);
+            let users = await response.json();
+
+            if(users.length > 0) {
+                let user = users[0];
+                if(user.Password === pass) {
+                    if(user.Status.toLowerCase() === "approved") {
+                        currentSessionUser = uid;
+                        
+                        // Check if it's user's first time login (FirstLogin flag !== false)
+                        if (user.FirstLogin !== "false") {
+                            document.getElementById("firstLoginOverlay").classList.add("active");
+                            document.getElementById("firstLoginModal").classList.add("active");
+                            showToast("⚠️ Set your permanent password!");
+                        } else {
+                            showToast("✓ Authentication Successful");
+                            switchSlot('Ops');
+                        }
+                    } else {
+                        showToast("❌ Access Denied: Awaiting Admin Approval.");
+                    }
+                } else {
+                    showToast("❌ Invalid Password Configuration.");
+                }
             } else {
-                showToast("❌ Invalid Password Configuration.");
+                showToast("❌ User ID Profile Non-Existent.");
             }
-        } else if (pendingApprovals[uid]) {
-            showToast("❌ Access Denied: Awaiting Admin Approval.");
-        } else {
-            showToast("❌ User ID Profile Non-Existent.");
+        } catch(err) {
+            showToast("❌ Network Error connecting to database.");
         }
     }
 
-    function executeRegistration() {
-        const uidInput = document.getElementById("regUid").value.trim();
-        const uidLower = uidInput.toLowerCase();
-
-        if(!uidInput) { showToast("⚠️ Provide a valid User ID"); return; }
-        if(uidLower === "admin" || usersDB[uidLower] || pendingApprovals[uidLower]) {
-            showToast("⚠️ ID Reserved or Already Claimed.");
+    async function executeFirstLoginPasswordSet() {
+        const newPass = document.getElementById("firstLoginNewPass").value.trim();
+        if(!newPass || newPass.length < 6) {
+            showToast("⚠️ Password must be at least 6 characters.");
             return;
         }
 
-        const generatedPassword = uidInput + "@123";
-        pendingApprovals[uidLower] = {
-            displayName: uidInput,
-            password: generatedPassword
-        };
+        showToast("🔄 Saving Permanent Password...");
+        try {
+            let patchRes = await fetch(`${SHEETDB_URL}/UserID/${currentSessionUser}`, {
+                method: 'PATCH',
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: { "Password": newPass, "FirstLogin": "false" } })
+            });
 
-        saveStorage();
-        showToast("📥 Request Logged! Awaiting Approval.");
-        renderAuthView('login');
+            let result = await patchRes.json();
+            if(result.updated >= 1) {
+                document.getElementById("firstLoginOverlay").classList.remove("active");
+                document.getElementById("firstLoginModal").classList.remove("active");
+                showToast("🟢 Password Saved Successfully!");
+                switchSlot('Ops');
+            } else {
+                showToast("❌ Error updating password.");
+            }
+        } catch(err) {
+            showToast("❌ Critical Connection Error.");
+        }
     }
 
-    function executeForgotPasswordRecovery() {
+    async function executeRegistration() {
+        const uidInput = document.getElementById("regUid").value.trim().toLowerCase();
+        const passInput = document.getElementById("regPass").value;
+
+        if(!uidInput || !passInput) { showToast("⚠️ All fields are mandatory."); return; }
+        if(uidInput === getAdminCredentials().uid.toLowerCase()) { showToast("⚠️ This ID is reserved."); return; }
+        if(passInput.length < 6) { showToast("⚠️ Password must be at least 6 characters."); return; }
+
+        showToast("🔄 Checking Availability...");
+
+        try {
+            let checkRes = await fetch(`${SHEETDB_URL}/search?UserID=${uidInput}`);
+            let checkData = await checkRes.json();
+
+            if(checkData.length > 0) {
+                showToast("⚠️ User ID already claimed.");
+                return;
+            }
+
+            showToast("🔄 Submitting Request...");
+            
+            let response = await fetch(SHEETDB_URL, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    data: [{ "UserID": uidInput, "Password": passInput, "Status": "Pending", "FirstLogin": "true" }]
+                })
+            });
+            
+            let result = await response.json();
+            if(result.created === 1) {
+                showToast("📥 Request Logged! Awaiting Approval.");
+                renderAuthView('login');
+            }
+        } catch(err) {
+            showToast("❌ Error connecting to database.");
+        }
+    }
+
+    async function executeForgotPasswordRecovery() {
         const uid = document.getElementById("forgotUid").value.trim().toLowerCase();
         const respFrame = document.getElementById("forgotResponseContainer");
 
         if(!uid) { showToast("⚠️ Enter User ID"); return; }
 
-        if(uid === "admin") {
-            respFrame.innerHTML = `<div class="password-preview-box" style="color:#c62828; border-color:#c62828; background:#fdeaea;">Master Admin profile credentials must be recovered via root terminal files.</div>`;
-            return;
-        }
+        showToast("🔄 Searching Records...");
+        try {
+            let response = await fetch(`${SHEETDB_URL}/search?UserID=${uid}`);
+            let users = await response.json();
 
-        if(usersDB[uid]) {
-            respFrame.innerHTML = `
-                <div class="password-preview-box">
-                    <strong>Profile Located!</strong><br>
-                    User ID: ${uid}<br>
-                    Password: <strong>${usersDB[uid].password}</strong>
-                </div>
-            `;
-            showToast("✓ Record Extracted");
-        } else if(pendingApprovals[uid]) {
-            respFrame.innerHTML = `<div class="password-preview-box" style="color:#e67e22; border-color:#e67e22; background:#fff3e0;">Profile request exists but remains in unauthorized Admin Approval Queue.</div>`;
-        } else {
-            respFrame.innerHTML = `<div class="password-preview-box" style="color:#c62828; border-color:#c62828; background:#fdeaea;">No record matching this ID exists inside system layers.</div>`;
+            if(users.length > 0) {
+                let user = users[0];
+                if(user.Status.toLowerCase() === "approved") {
+                    respFrame.innerHTML = `
+                        <div style="padding:12px; background:#E5F9E7; border-radius:12px; color:#34C759; font-size:13px; font-weight:600;">
+                            ✓ User ID verified! Please contact Master Admin to securely reset your credentials.
+                        </div>
+                    `;
+                } else {
+                    respFrame.innerHTML = `
+                        <div style="padding:12px; background:#FFF5E5; border-radius:12px; color:#FF9500; font-size:13px; font-weight:600;">
+                            ⏳ Your profile exists but remains in Pending Approval Queue.
+                        </div>
+                    `;
+                }
+            } else {
+                respFrame.innerHTML = `
+                    <div style="padding:12px; background:#FFE5E5; border-radius:12px; color:#FF3B30; font-size:13px; font-weight:600;">
+                        ❌ No record matching this ID exists.
+                    </div>
+                `;
+            }
+        } catch(err) {
+            showToast("❌ Database connection error.");
         }
     }
 
-    function renderAdminPanelIfRequired() {
+    function openPasswordChangeModal() {
+        if(currentSessionUser === "MASTER_ADMIN") {
+            openAdminSecurityModal();
+            return;
+        }
+        document.getElementById("oldPassInput").value = "";
+        document.getElementById("newPassInput").value = "";
+        document.getElementById("passwordChangeModal").classList.add("active");
+        document.getElementById("passwordChangeOverlay").classList.add("active");
+    }
+
+    function closePasswordChangeModal() {
+        document.getElementById("passwordChangeModal").classList.remove("active");
+        document.getElementById("passwordChangeOverlay").classList.remove("active");
+    }
+
+    async function executePasswordChange() {
+        const oldPass = document.getElementById("oldPassInput").value;
+        const newPass = document.getElementById("newPassInput").value;
+
+        if(!oldPass || !newPass) { showToast("⚠️ Both fields are required."); return; }
+        if(newPass.length < 6) { showToast("⚠️ New password must be at least 6 characters."); return; }
+
+        showToast("🔄 Verifying Current Password...");
+        try {
+            let response = await fetch(`${SHEETDB_URL}/search?UserID=${currentSessionUser}`);
+            let users = await response.json();
+
+            if(users.length > 0) {
+                let user = users[0];
+                if(user.Password !== oldPass) {
+                    showToast("❌ Current password verification failed.");
+                    return;
+                }
+
+                showToast("⚙️ Updating password...");
+                let patchRes = await fetch(`${SHEETDB_URL}/UserID/${currentSessionUser}`, {
+                    method: 'PATCH',
+                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: { "Password": newPass } })
+                });
+
+                let result = await patchRes.json();
+                if(result.updated >= 1) {
+                    showToast("🟢 Password Updated Successfully!");
+                    closePasswordChangeModal();
+                } else {
+                    showToast("❌ Error updating password.");
+                }
+            }
+        } catch(err) {
+            showToast("❌ Critical Network Connection Failure.");
+        }
+    }
+
+    // Admin Super Powers: Edit User Credentials
+    function openAdminEditUserModal(uid, currentPass) {
+        document.getElementById("editTargetOriginalUid").value = uid;
+        document.getElementById("editTargetNewUid").value = uid;
+        document.getElementById("editTargetNewPass").value = currentPass;
+        document.getElementById("adminEditUserModal").classList.add("active");
+        document.getElementById("adminEditUserOverlay").classList.add("active");
+    }
+
+    function closeAdminEditUserModal() {
+        document.getElementById("adminEditUserModal").classList.remove("active");
+        document.getElementById("adminEditUserOverlay").classList.remove("active");
+    }
+
+    async function executeAdminUserUpdate() {
+        const originalUid = document.getElementById("editTargetOriginalUid").value;
+        const newUid = document.getElementById("editTargetNewUid").value.trim().toLowerCase();
+        const newPass = document.getElementById("editTargetNewPass").value.trim();
+
+        if(!newUid || !newPass) { showToast("⚠️ Fields cannot be empty!"); return; }
+
+        showToast("🔄 Updating User Credentials...");
+        try {
+            let patchRes = await fetch(`${SHEETDB_URL}/UserID/${originalUid}`, {
+                method: 'PATCH',
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: { "UserID": newUid, "Password": newPass } })
+            });
+
+            let result = await patchRes.json();
+            if(result.updated >= 1) {
+                showToast("🟢 Credentials Updated!");
+                closeAdminEditUserModal();
+                renderAdminPanelIfRequired();
+            } else {
+                showToast("❌ Error updating records.");
+            }
+        } catch(err) {
+            showToast("❌ Connection Failure.");
+        }
+    }
+
+    // Admin Super Powers: Update Master Admin Credentials
+    function openAdminSecurityModal() {
+        const creds = getAdminCredentials();
+        document.getElementById("newAdminIdInput").value = creds.uid;
+        document.getElementById("newAdminPassInput").value = creds.pass;
+        document.getElementById("adminSecurityModal").classList.add("active");
+        document.getElementById("adminSecurityOverlay").classList.add("active");
+    }
+
+    function closeAdminSecurityModal() {
+        document.getElementById("adminSecurityModal").classList.remove("active");
+        document.getElementById("adminSecurityOverlay").classList.remove("active");
+    }
+
+    function executeUpdateMasterAdmin() {
+        const newId = document.getElementById("newAdminIdInput").value.trim();
+        const newPass = document.getElementById("newAdminPassInput").value.trim();
+
+        if(!newId || !newPass) { showToast("⚠️ All fields required!"); return; }
+
+        localStorage.setItem("master_admin_id", newId);
+        localStorage.setItem("master_admin_pass", newPass);
+        
+        showToast("🛡️ Master Admin Credentials Updated!");
+        closeAdminSecurityModal();
+    }
+
+    async function renderAdminPanelIfRequired() {
         const panel = document.getElementById("adminApprovalSection");
         const queueBody = document.getElementById("adminQueueBody");
         const activeUsersBody = document.getElementById("adminActiveUsersBody");
@@ -1080,72 +971,92 @@
         
         if(currentSessionUser !== "MASTER_ADMIN") {
             panel.style.display = "none";
-            dashTitle.innerText = `Operational Intelligence Dashboards (${currentSessionUser.toUpperCase()})`;
+            dashTitle.innerText = `Operations Desk (${currentSessionUser.toUpperCase()})`;
             return;
         }
 
         panel.style.display = "block";
         dashTitle.innerText = "🛡️ Master Admin Control Center";
-        queueBody.innerHTML = "";
-        activeUsersBody.innerHTML = "";
+        queueBody.innerHTML = "<tr><td colspan='3' style='font-size:13px; text-align:center;'>⏳ Fetching Live Database...</td></tr>";
+        activeUsersBody.innerHTML = "<tr><td colspan='3' style='font-size:13px; text-align:center;'>⏳ Fetching Live Database...</td></tr>";
 
-        // Render Pending Queue
-        const pendingKeys = Object.keys(pendingApprovals);
-        if(pendingKeys.length === 0) {
-            queueBody.innerHTML = `<p style="font-size:13px; color:var(--text-muted); font-style:italic; text-align:center; padding:10px;">Zero structural requests pending execution in queue loop.</p>`;
-        } else {
-            pendingKeys.forEach(key => {
-                const item = pendingApprovals[key];
-                queueBody.innerHTML += `
-                    <div class="approval-row">
-                        <div style="font-size:14px; font-weight:600;">👤 ID: <span style="color:var(--primary-color);">${item.displayName}</span> (Pass: ${item.password})</div>
-                        <div class="action-btn-group">
-                            <button class="action-mini-btn" style="background:#2E7D32;" onclick="adminProcessAuthorize('${key}', true)">Approve</button>
-                            <button class="action-mini-btn" style="background:#C62828;" onclick="adminProcessAuthorize('${key}', false)">Reject</button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
+        try {
+            let res = await fetch(SHEETDB_URL);
+            let allUsers = await res.json();
+            
+            queueBody.innerHTML = "";
+            activeUsersBody.innerHTML = "";
+            let pendingCount = 0;
+            let activeCount = 0;
 
-        // Render Active Users List (Excluding master admin itself)
-        const activeKeys = Object.keys(usersDB);
-        if(activeKeys.length === 0) {
-            activeUsersBody.innerHTML = `<p style="font-size:13px; color:var(--text-muted); font-style:italic; text-align:center; padding:10px;">No registered users found inside database.</p>`;
-        } else {
-            activeKeys.forEach(key => {
-                activeUsersBody.innerHTML += `
-                    <div class="approval-row" style="background:#e8f0fe;">
-                        <div style="font-size:14px; font-weight:600; color:#1a73e8;">🟢 Active User: <strong>${key}</strong> (Pass: ${usersDB[key].password})</div>
-                        <div class="action-btn-group">
-                            <button class="action-mini-btn" style="background:#D32F2F;" onclick="adminRevokeAccess('${key}')">✕ Revoke Access</button>
-                        </div>
-                    </div>
-                `;
+            allUsers.forEach(user => {
+                if(user.UserID === getAdminCredentials().uid) return;
+                
+                if(user.Status.toLowerCase() === "pending") {
+                    pendingCount++;
+                    queueBody.innerHTML += `
+                        <tr>
+                            <td><strong>${user.UserID}</strong></td>
+                            <td><span class="admin-badge badge-pending">Pending</span></td>
+                            <td style="text-align: right;">
+                                <button class="action-mini-btn" style="background:var(--ios-green);" onclick="adminProcessAuthorize('${user.UserID}', true)">Approve</button>
+                                <button class="action-mini-btn" style="background:var(--ios-red); margin-left: 6px;" onclick="adminProcessAuthorize('${user.UserID}', false)">Reject</button>
+                            </td>
+                        </tr>
+                    `;
+                } else if (user.Status.toLowerCase() === "approved") {
+                    activeCount++;
+                    activeUsersBody.innerHTML += `
+                        <tr>
+                            <td style="color:var(--ios-blue);"><strong>${user.UserID}</strong></td>
+                            <td><span class="admin-badge badge-active">Authorized</span></td>
+                            <td style="text-align: right;">
+                                <button class="action-mini-btn" style="background:var(--ios-blue);" onclick="openAdminEditUserModal('${user.UserID}', '${user.Password}')">⚙️ Edit</button>
+                                <button class="action-mini-btn" style="background:var(--ios-red); margin-left: 6px;" onclick="adminRevokeAccess('${user.UserID}')">✕ Revoke</button>
+                            </td>
+                        </tr>
+                    `;
+                }
             });
+
+            if(pendingCount === 0) queueBody.innerHTML = `<tr><td colspan="3" style="font-size:13px; color:var(--ios-text-muted); font-style:italic; text-align:center; padding:15px;">Zero requests waiting inside queue.</td></tr>`;
+            if(activeCount === 0) activeUsersBody.innerHTML = `<tr><td colspan="3" style="font-size:13px; color:var(--ios-text-muted); font-style:italic; text-align:center; padding:15px;">No active team profiles discovered.</td></tr>`;
+        } catch(err) {
+            queueBody.innerHTML = "<tr><td colspan='3' style='color:red;'>Error Loading Live Data Matrix.</td></tr>";
+            activeUsersBody.innerHTML = "<tr><td colspan='3' style='color:red;'>Error Loading Live Data Matrix.</td></tr>";
         }
     }
 
-    function adminProcessAuthorize(key, isApproved) {
-        if(isApproved) {
-            usersDB[key] = {
-                password: pendingApprovals[key].password
-            };
-            showToast(`✓ Profile '${pendingApprovals[key].displayName}' authorized.`);
-        } else {
-            showToast(`✕ Registration rejected.`);
+    async function adminProcessAuthorize(userId, isApproved) {
+        showToast("🔄 Updating Database...");
+        try {
+            if(isApproved) {
+                await fetch(`${SHEETDB_URL}/UserID/${userId}`, {
+                    method: 'PATCH',
+                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: { "Status": "Approved", "FirstLogin": "true" } })
+                });
+                showToast(`✓ Profile '${userId}' authorized.`);
+            } else {
+                await fetch(`${SHEETDB_URL}/UserID/${userId}`, { method: 'DELETE' });
+                showToast(`✕ Registration rejected & deleted.`);
+            }
+            renderAdminPanelIfRequired(); 
+        } catch(err) {
+            showToast("❌ Error updating database.");
         }
-        delete pendingApprovals[key];
-        saveStorage();
-        renderAdminPanelIfRequired();
     }
 
-    function adminRevokeAccess(key) {
-        if(confirm(`Are you sure you want to remove all access for user: '${key}'?`)) {
-            delete usersDB[key];
-            saveStorage();
-            showToast(`✕ Access revoked. User '${key}' blocked.`);
-            renderAdminPanelIfRequired();
+    async function adminRevokeAccess(userId) {
+        if(!confirm(`Are you sure you want to remove all access for user: '${userId}'?`)) return;
+        
+        showToast("🔄 Revoking access...");
+        try {
+            await fetch(`${SHEETDB_URL}/UserID/${userId}`, { method: 'DELETE' });
+            showToast(`✕ Access revoked. User '${userId}' blocked.`);
+            renderAdminPanelIfRequired(); 
+        } catch(err) {
+            showToast("❌ Error updating database.");
         }
     }
 
@@ -1155,22 +1066,11 @@
         switchSlot('Ops');
     }
 
-    // ================= ROSTER ANALYTICS & CALCULATION ENGINE =================
     function showToast(msg) {
         const toast = document.getElementById("toastBox");
         document.getElementById("toastText").innerText = msg;
         toast.classList.add("show");
         setTimeout(() => toast.classList.remove("show"), 3000);
-    }
-
-    function openHistoryModal() {
-        document.getElementById("historyModal").classList.add("active");
-        document.getElementById("modalOverlay").classList.add("active");
-    }
-
-    function closeHistoryModal() {
-        document.getElementById("historyModal").classList.remove("active");
-        document.getElementById("modalOverlay").classList.remove("active");
     }
 
     function openShiftSelectionModal() {
@@ -1217,56 +1117,13 @@
         document.getElementById("threepOverlay").classList.remove("active");
     }
 
-    function selectHistoryMonth(monthIdx) {
-        document.getElementById("monthSelect").value = monthIdx;
-        closeHistoryModal();
-        showToast("Month switched. Run Employee Search if required.");
-    }
-
-    function resetToCurrentMonth() {
-        initMonthLogic();
-        closeHistoryModal();
-        showToast("Returned to Current Month Setup");
-    }
-
     function getOperationalDateInfo() {
         const now = new Date();
-        let operationalDate = now.getDate();
-        let operationalMonth = now.getMonth();
-        let operationalYear = now.getFullYear();
-
-        const currentHours = now.getHours();
-        const currentMinutes = now.getMinutes();
-        const totalMinutesToday = (currentHours * 60) + currentMinutes;
-        const cutoffMinutes = (5 * 60) + 45; 
-
-        if (totalMinutesToday <= cutoffMinutes) {
-            const previousDayDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-            operationalDate = previousDayDate.getDate();
-            operationalMonth = previousDayDate.getMonth();
-            operationalYear = previousDayDate.getFullYear();
-        }
-
-        return { operationalDate, operationalMonth, operationalYear };
-    }
-
-    function initMonthLogic() {
-        const { operationalDate, operationalMonth, operationalYear } = getOperationalDateInfo();
-        targetYear = operationalYear;
-        const selectBox = document.getElementById("monthSelect");
-        selectBox.value = operationalMonth;
-
-        if (operationalDate >= 28 || operationalDate === 1) {
-            selectBox.disabled = false;
-            if (operationalMonth === 11 && operationalDate >= 28) targetYear = operationalYear + 1;
-        } else {
-            selectBox.disabled = true;
-        }
+        return { operationalDate: now.getDate(), operationalMonth: now.getMonth(), operationalYear: now.getFullYear() };
     }
 
     function parseCSVLine(text) {
-        let p = '', r = [];
-        let q = false;
+        let p = '', r = [], q = false;
         for (let i = 0; i < text.length; i++) {
             let c = text.charAt(i);
             if (c === '"') { q = !q; }
@@ -1275,31 +1132,6 @@
         }
         r.push(p);
         return r;
-    }
-
-    function mapRosterHeaders() {
-        if(roster.length === 0) return;
-        const headers = roster[0].map(h => String(h).trim().toUpperCase());
-        
-        const idIndex = headers.findIndex(h => h.includes("ID") && !h.includes("BA"));
-        const baIndex = headers.findIndex(h => h.includes("BA"));
-        const nameIndex = headers.findIndex(h => h.includes("NAME") && !h.includes("ID"));
-
-        if(idIndex !== -1) colMap.id = idIndex;
-        if(baIndex !== -1) colMap.ba = baIndex;
-        if(nameIndex !== -1) colMap.name = nameIndex;
-
-        colMap.days = {};
-        headers.forEach((h, idx) => {
-            let pureNum = parseInt(h, 10);
-            if(!isNaN(pureNum) && pureNum >= 1 && pureNum <= 31) {
-                colMap.days[pureNum] = idx;
-            }
-        });
-
-        if(Object.keys(colMap.days).length === 0) {
-            for(let d=1; d<=31; d++) { colMap.days[d] = 19 + d; }
-        }
     }
 
     async function loadRoster() {  
@@ -1312,7 +1144,6 @@
             const cleanRows = txt.replace(/\r/g, "").split("\n");
             roster = cleanRows.filter(row => row.trim() !== "").map(r => parseCSVLine(r));  
             
-            mapRosterHeaders();
             btn.innerText = "Search Roster";  
             btn.disabled = false;  
         } catch (err) {  
@@ -1325,22 +1156,21 @@
         const titleContainer = document.getElementById("glassPopupTitle");
         const bodyContainer = document.getElementById("glassPopupBody");
 
-        titleContainer.innerText = titleText + ` (${targetList.length})`;
+        titleContainer.innerText = `${titleText} (${targetList.length})`;
         bodyContainer.innerHTML = "";
 
         if(targetList.length === 0) {
-            bodyContainer.innerHTML = `<div style="text-align:center; padding: 20px; color: #666; font-style:italic;">No employees found in this list.</div>`;
+            bodyContainer.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--ios-text-muted); font-style:italic;">No employees found in this list.</div>`;
         } else {
             targetList.forEach(emp => {
                 bodyContainer.innerHTML += `
                     <div class="emp-list-item">
                         ${emp.name}
-                        <span>BA: ${emp.ba}</span>
+                        <span>ID: ${emp.ba}</span>
                     </div>
                 `;
             });
         }
-
         document.getElementById("glassOverlay").classList.add("active");
         document.getElementById("glassPopup").classList.add("active");
     }
@@ -1355,8 +1185,7 @@
         const targetDayColIndex = colMap.days[targetDay];
         if (!targetDayColIndex) return dayLists;
         
-        let nextDay = targetDay + 1;
-        let nextDayColIndex = colMap.days[nextDay];
+        let nextDayColIndex = colMap.days[targetDay + 1];
 
         for (let i = 1; i < roster.length; i++) {
             const emp = roster[i];
@@ -1365,26 +1194,14 @@
             let val = String(emp[targetDayColIndex]).trim().toUpperCase();
             if (!val || String(emp[colMap.id]).trim() === "") continue;
 
-            let nextVal = (nextDayColIndex && nextDayColIndex < emp.length) ? String(nextDayColIndex).trim().toUpperCase() : "";
             let pfx = val.charAt(0);
-
             let isOff = val.endsWith("SO") || val.includes("OFF");
             let isLeave = val.endsWith("L") || val.includes("CL") || val.includes("PL") || val.includes("EL") || val.includes("AL") || val.includes("-") || val.includes(">");
             let isAbsent = val.endsWith("A") || val === (pfx + "A");
             let isPresent = val.endsWith("P") || val === (pfx + "P");
             let isStillInPlan = (!isOff && !isLeave && !isAbsent && !isPresent && val.length >= 1);
 
-            if (val.startsWith("DS3") || val.startsWith("P") || ((val.startsWith("DA1") || val.startsWith("DS2")) && isStillInPlan)) {
-                if (nextVal.endsWith("SO") || nextVal.includes("OFF") || nextVal.includes("SO")) {
-                    isOff = true; isStillInPlan = false; isAbsent = false; isPresent = false;
-                }
-            }
-
-            const employeeMetadata = { 
-                id: emp[colMap.id], 
-                ba: emp[colMap.ba] || emp[colMap.id], 
-                name: emp[colMap.name] || "Unknown" 
-            };
+            const employeeMetadata = { id: emp[colMap.id], ba: emp[colMap.id], name: emp[colMap.name] || "Unknown" };
             dayLists.rosterPlan.push(employeeMetadata);
             if (isOff) dayLists.weekOff.push(employeeMetadata);
             else if (isLeave) dayLists.leave.push(employeeMetadata);
@@ -1400,26 +1217,24 @@
         const targetList = dayData[categoryKey];
         const titleContainer = document.getElementById("glassPopupTitle");
         const bodyContainer = document.getElementById("glassPopupBody");
-
-        const { operationalMonth } = getOperationalDateInfo();
         const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const { operationalMonth } = getOperationalDateInfo();
 
         titleContainer.innerText = `${day} ${monthNames[operationalMonth]} - ${titleText} (${targetList.length})`;
         bodyContainer.innerHTML = "";
 
         if(targetList.length === 0) {
-            bodyContainer.innerHTML = `<div style="text-align:center; padding: 20px; color: #666; font-style:italic;">No employees found.</div>`;
+            bodyContainer.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--ios-text-muted); font-style:italic;">No employees found.</div>`;
         } else {
             targetList.forEach(emp => {
                 bodyContainer.innerHTML += `
                     <div class="emp-list-item">
                         ${emp.name}
-                        <span>BA: ${emp.ba}</span>
+                        <span>ID: ${emp.ba}</span>
                     </div>
                 `;
             });
         }
-
         document.getElementById("glassOverlay").classList.add("active");
         document.getElementById("glassPopup").classList.add("active");
     }
@@ -1433,12 +1248,10 @@
 
         activeLists = { rosterPlan:[], weekOff:[], leave:[], scheduledOps:[], stillInPlan:[], absent:[], present:[] };
 
-        if (!targetDayColIndex) { alert("Target day column error"); return; }
+        if (!targetDayColIndex) return;
 
         const firstLetterMap = { "Morning": "M", "General": "G", "Day": "D", "Night": "N" };
         const matchLetter = firstLetterMap[shiftType];
-
-        let nextDayColIndex = colMap.days[operationalDate + 1];
 
         for (let i = 1; i < roster.length; i++) {
             const emp = roster[i];
@@ -1447,9 +1260,7 @@
             let val = String(emp[targetDayColIndex]).trim().toUpperCase();
             if (!val || String(emp[colMap.id]).trim() === "") continue;
 
-            let nextVal = (nextDayColIndex && nextDayColIndex < emp.length) ? String(nextDayColIndex).trim().toUpperCase() : "";
             let pfx = val.charAt(0);
-
             if (pfx !== matchLetter) continue;
 
             let isOff = val.endsWith("SO") || val.includes("OFF");
@@ -1458,21 +1269,7 @@
             let isPresent = val.endsWith("P") || val === (pfx + "P");
             let isStillInPlan = (!isOff && !isLeave && !isAbsent && !isPresent && val.length >= 1);
 
-            let isPartTimer = val.startsWith("DS3") || val.startsWith("P") || ((val.startsWith("DA1") || val.startsWith("DS2")) && isStillInPlan);
-            
-            if (isPartTimer) {
-                if (nextVal.endsWith("SO") || nextVal.includes("OFF") || nextVal.includes("SO")) {
-                    isOff = true; isStillInPlan = false; isAbsent = false; isPresent = false;
-                }
-            }
-
-            if (shiftType === "Day" && isPartTimer) continue;
-
-            const employeeMetadata = { 
-                id: emp[colMap.id], 
-                ba: emp[colMap.ba] || emp[colMap.id], 
-                name: emp[colMap.name] || "Unknown" 
-            };
+            const employeeMetadata = { id: emp[colMap.id], ba: emp[colMap.id], name: emp[colMap.name] || "Unknown" };
             activeLists.rosterPlan.push(employeeMetadata);
 
             if (isOff) activeLists.weekOff.push(employeeMetadata);
@@ -1489,11 +1286,10 @@
             </div>` : "";
 
         const container = document.getElementById("shiftResultContainer");
-        
         container.innerHTML = `
             <div class="shift-report-card">
                 <div class="shift-title">
-                    <span>Date: ${operationalDate} ${monthNames[operationalMonth]}</span>
+                    <span>${operationalDate} ${monthNames[operationalMonth]}</span>
                     <span>${shiftType} Shift KPI</span>
                 </div>
                 <div class="ops-metrics-list">
@@ -1518,57 +1314,50 @@
         const currentMonthLabel = monthNames[operationalMonth];
 
         const container = document.getElementById("mandaysResultContainer");
-        container.innerHTML = "";
-
         let tableRowsHtml = "";
         let validDaysCount = 0;
 
         for (let d = 1; d <= 31; d++) {
             if (!colMap.days[d]) continue;
-            
             let dayData = getListsForDay(d);
             if (dayData.rosterPlan.length === 0) continue; 
 
             validDaysCount++;
             let isPastOrToday = (d <= operationalDate);
-            
             let displayLabel = isPastOrToday ? "Actual Present" : "Upcoming Plan";
             let displayCount = isPastOrToday ? dayData.present.length : dayData.scheduledOps.length;
             
             let rowStyle = isPastOrToday 
-                ? "background: #e8f5e9; color: #2e7d32; font-weight: 600;" 
-                : "background: #f4f8fe; color: #1a73e8; font-weight: 600;";
+                ? "background: #E5F9E7; color: #34C759; font-weight: 700;" 
+                : "background: rgba(0, 122, 255, 0.08); color: var(--ios-blue); font-weight: 700;";
 
             tableRowsHtml += `
                 <tr style="${rowStyle}">
-                    <td style="padding: 12px 10px; border: 1px solid #dadce0; text-align: left;">📅 ${d} ${currentMonthLabel}</td>
-                    <td style="padding: 12px 10px; border: 1px solid #dadce0; text-align: center; font-size: 13px; text-transform: uppercase;">${displayLabel}</td>
-                    <td style="padding: 12px 10px; border: 1px solid #dadce0; text-align: center; font-size: 16px; font-weight: bold;">${displayCount}</td>
+                    <td style="padding: 12px 14px; border: 1px solid var(--ios-border); text-align: left;">📅 ${d} ${currentMonthLabel}</td>
+                    <td style="padding: 12px 14px; border: 1px solid var(--ios-border); text-align: center; font-size: 13px; text-transform: uppercase;">${displayLabel}</td>
+                    <td style="padding: 12px 14px; border: 1px solid var(--ios-border); text-align: center; font-size: 16px;">${displayCount}</td>
                 </tr>
             `;
         }
 
         if (validDaysCount > 0) {
             container.innerHTML = `
-                <div style="width: 100%; overflow-x: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid var(--border-color);">
+                <div style="width: 100%; overflow-x: auto; border-radius: 14px; border: 1px solid var(--ios-border);">
                     <table style="width: 100%; border-collapse: collapse; background: #fff; font-size: 14px;">
                         <thead>
-                            <tr style="background: #37474F; color: #fff; text-align: center;">
-                                <th style="padding: 12px 10px; font-weight: 600; text-align: left;">Date</th>
-                                <th style="padding: 12px 10px; font-weight: 600;">Status Type</th>
-                                <th style="padding: 12px 10px; font-weight: 600;">Count</th>
+                            <tr style="background: #1C1C1E; color: #fff; text-align: center;">
+                                <th style="padding: 12px 14px; font-weight: 700; text-align: left;">Date</th>
+                                <th style="padding: 12px 14px; font-weight: 700;">Status Type</th>
+                                <th style="padding: 12px 14px; font-weight: 700;">Count</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            ${tableRowsHtml}
-                        </tbody>
+                        <tbody>${tableRowsHtml}</tbody>
                     </table>
                 </div>
             `;
         } else {
-            container.innerHTML = `<div style="text-align:center; padding: 25px; color: var(--text-muted); font-style:italic;">No active roster data found to calculate Mandays.</div>`;
+            container.innerHTML = `<div style="text-align:center; padding: 25px; color: var(--ios-text-muted); font-style:italic;">No active roster data found to calculate Mandays.</div>`;
         }
-        
         container.style.display = "block";
     }
 
@@ -1590,7 +1379,6 @@
         };
 
         if(!targetDayColIndex) return;
-        let nextDayColIndex = colMap.days[operationalDate + 1];
 
         for (let i = 1; i < roster.length; i++) {
             const emp = roster[i];
@@ -1599,9 +1387,7 @@
             let val = String(emp[targetDayColIndex]).trim().toUpperCase();
             if (!val || String(emp[colMap.id]).trim() === "") continue;
 
-            let nextVal = (nextDayColIndex && nextDayColIndex < emp.length) ? String(nextDayColIndex).trim().toUpperCase() : "";
             let pfx = val.charAt(0);
-
             let isOff = val.endsWith("SO") || val.includes("OFF");
             let isLeave = val.endsWith("L") || val.includes("CL") || val.includes("PL") || val.includes("EL") || val.includes("AL") || val.includes("-") || val.includes(">");
             let isAbsent = val.endsWith("A") || val === (pfx + "A");
@@ -1612,11 +1398,7 @@
 
             if (val.startsWith("DS3") || val.startsWith("P") || ((val.startsWith("DA1") || val.startsWith("DS2")) && isStillInPlan)) {
                 targetShiftKey = "PartTimer";
-                if (nextVal.endsWith("SO") || nextVal.includes("OFF") || nextVal.includes("SO")) {
-                    isOff = true; isStillInPlan = false; isAbsent = false; isPresent = false;
-                }
-            } 
-            else if (pfx === "M") targetShiftKey = "Morning";
+            } else if (pfx === "M") targetShiftKey = "Morning";
             else if (pfx === "G") targetShiftKey = "General";
             else if (pfx === "D") targetShiftKey = "Day";
             else if (pfx === "N") targetShiftKey = "Night";
@@ -1624,20 +1406,11 @@
             if (!targetShiftKey) continue;
 
             shifts[targetShiftKey].roster++;
-
-            if (isOff) {
-                shifts[targetShiftKey].off++;
-            } else if (isLeave) {
-                shifts[targetShiftKey].leave++;
-            } else if (isAbsent) {
-                shifts[targetShiftKey].absent++;
-                shifts[targetShiftKey].ops++;
-            } else if (isPresent) {
-                shifts[targetShiftKey].present++;
-                shifts[targetShiftKey].ops++;
-            } else if (isStillInPlan) {
-                shifts[targetShiftKey].ops++; 
-            }
+            if (isOff) shifts[targetShiftKey].off++;
+            else if (isLeave) shifts[targetShiftKey].leave++;
+            else if (isAbsent) { shifts[targetShiftKey].absent++; shifts[targetShiftKey].ops++; }
+            else if (isPresent) { shifts[targetShiftKey].present++; shifts[targetShiftKey].ops++; }
+            else if (isStillInPlan) shifts[targetShiftKey].ops++; 
         }
 
         let keys = ["Morning", "General", "Day", "PartTimer", "Night"];
@@ -1651,92 +1424,37 @@
         const pct = (num, den) => den > 0 ? Math.round((num / den) * 100) + "%" : "0%";
         const availPct = (pres, rost) => rost > 0 ? Math.round((pres / rost) * 100) + "%" : "0%";
 
-        const tbody = document.getElementById("threepTableBody");
-        tbody.innerHTML = `
-            <tr>
-                <td>Roster</td>
-                <td>${shifts.Morning.roster}</td><td>${shifts.General.roster}</td><td>${shifts.Day.roster}</td><td>${shifts.PartTimer.roster}</td><td>${shifts.Night.roster}</td>
-                <td style="background:#f1f3f4;">${totalRoster}</td>
-            </tr>
-            <tr>
-                <td>Week Off</td>
-                <td>${shifts.Morning.off}</td><td>${shifts.General.off}</td><td>${shifts.Day.off}</td><td>${shifts.PartTimer.off}</td><td>${shifts.Night.off}</td>
-                <td style="background:#f1f3f4;">${totalOff}</td>
-            </tr>
-            <tr>
-                <td>Leave (Approved)</td>
-                <td>${shifts.Morning.leave}</td><td>${shifts.General.leave}</td><td>${shifts.Day.leave}</td><td>${shifts.PartTimer.leave}</td><td>${shifts.Night.leave}</td>
-                <td style="background:#f1f3f4;">${totalLeave}</td>
-            </tr>
-            <tr class="threep-row-ops">
-                <td>Planned by OPS</td>
-                <td>${shifts.Morning.ops}</td><td>${shifts.General.ops}</td><td>${shifts.Day.ops}</td><td>${shifts.PartTimer.ops}</td><td>${shifts.Night.ops}</td>
-                <td style="background:#C8E6C9;">${totalOps}</td>
-            </tr>
-            <tr>
-                <td>Absenteeism</td>
-                <td>${shifts.Morning.absent}</td><td>${shifts.General.absent}</td><td>${shifts.Day.absent}</td><td>${shifts.PartTimer.absent}</td><td>${shifts.Night.absent}</td>
-                <td style="background:#f1f3f4;">${totalAbs}</td>
-            </tr>
-            <tr style="background:#FFFDE7;">
-                <td>Present on Floor</td>
-                <td>${shifts.Morning.present}</td><td>${shifts.General.present}</td><td>${shifts.Day.present}</td><td>${shifts.PartTimer.present}</td><td>${shifts.Night.present}</td>
-                <td style="background:#FFF9C4;">${totalPres}</td>
-            </tr>
-            <tr class="threep-row-yellow">
-                <td>Physical Present %</td>
-                <td>${pct(shifts.Morning.present, shifts.Morning.ops)}</td><td>${pct(shifts.General.present, shifts.General.ops)}</td><td>${pct(shifts.Day.present, shifts.Day.ops)}</td><td>${pct(shifts.PartTimer.present, shifts.PartTimer.ops)}</td><td>${pct(shifts.Night.present, shifts.Night.ops)}</td>
-                <td style="font-weight:bold; background:#FFF59D;">${pct(totalPres, totalOps)}</td>
-            </tr>
-            <tr>
-                <td>Week off %</td>
-                <td>${pct(shifts.Morning.off, shifts.Morning.roster)}</td><td>${pct(shifts.General.off, shifts.General.roster)}</td><td>${pct(shifts.Day.off, shifts.Day.roster)}</td><td>${pct(shifts.PartTimer.off, shifts.PartTimer.roster)}</td><td>${pct(shifts.Night.off, shifts.Night.roster)}</td>
-                <td>${pct(totalOff, totalRoster)}</td>
-            </tr>
-            <tr>
-                <td>Leave (Approved) %</td>
-                <td>${pct(shifts.Morning.leave, shifts.Morning.roster)}</td><td>${pct(shifts.General.leave, shifts.General.roster)}</td><td>${pct(shifts.Day.leave, shifts.Day.roster)}</td><td>${pct(shifts.PartTimer.leave, shifts.PartTimer.roster)}</td><td>${pct(shifts.Night.leave, shifts.Night.roster)}</td>
-                <td>${pct(totalLeave, totalRoster)}</td>
-            </tr>
-            <tr class="threep-row-pink">
-                <td>Absenteeism %</td>
-                <td>${pct(shifts.Morning.absent, shifts.Morning.roster)}</td><td>${pct(shifts.General.absent, shifts.General.roster)}</td><td>${pct(shifts.Day.absent, shifts.Day.roster)}</td><td>${pct(shifts.PartTimer.absent, shifts.PartTimer.roster)}</td><td>${pct(shifts.Night.absent, shifts.Night.roster)}</td>
-                <td style="font-weight:bold; background:#FFCDD2;">${pct(totalAbs, totalRoster)}</td>
-            </tr>
-            <tr>
-                <td>Roster vs availability %</td>
-                <td>${availPct(shifts.Morning.present, shifts.Morning.roster)}</td><td>${availPct(shifts.General.present, shifts.General.roster)}</td><td>${availPct(shifts.Day.present, shifts.Day.roster)}</td><td>${availPct(shifts.PartTimer.present, shifts.PartTimer.roster)}</td><td>${availPct(shifts.Night.present, shifts.Night.roster)}</td>
-                <td style="font-weight:bold; background:#E0E0E0;">${availPct(totalPres, totalRoster)}</td>
-            </tr>
+        document.getElementById("threepTableBody").innerHTML = `
+            <tr><td>Roster</td><td>${shifts.Morning.roster}</td><td>${shifts.General.roster}</td><td>${shifts.Day.roster}</td><td>${shifts.PartTimer.roster}</td><td>${shifts.Night.roster}</td><td style="background:var(--ios-bg); font-weight:800;">${totalRoster}</td></tr>
+            <tr><td>Week Off</td><td>${shifts.Morning.off}</td><td>${shifts.General.off}</td><td>${shifts.Day.off}</td><td>${shifts.PartTimer.off}</td><td>${shifts.Night.off}</td><td style="background:var(--ios-bg); font-weight:800;">${totalOff}</td></tr>
+            <tr><td>Leave (Approved)</td><td>${shifts.Morning.leave}</td><td>${shifts.General.leave}</td><td>${shifts.Day.leave}</td><td>${shifts.PartTimer.leave}</td><td>${shifts.Night.leave}</td><td style="background:var(--ios-bg); font-weight:800;">${totalLeave}</td></tr>
+            <tr style="background:#E5F9E7;"><td>Planned by OPS</td><td>${shifts.Morning.ops}</td><td>${shifts.General.ops}</td><td>${shifts.Day.ops}</td><td>${shifts.PartTimer.ops}</td><td>${shifts.Night.ops}</td><td style="font-weight:800; color:#34C759;">${totalOps}</td></tr>
+            <tr><td>Absenteeism</td><td>${shifts.Morning.absent}</td><td>${shifts.General.absent}</td><td>${shifts.Day.absent}</td><td>${shifts.PartTimer.absent}</td><td>${shifts.Night.absent}</td><td style="background:var(--ios-bg); font-weight:800;">${totalAbs}</td></tr>
+            <tr style="background:#FFF5E5;"><td>Present on Floor</td><td>${shifts.Morning.present}</td><td>${shifts.General.present}</td><td>${shifts.Day.present}</td><td>${shifts.PartTimer.present}</td><td>${shifts.Night.present}</td><td style="font-weight:800; color:#FF9500;">${totalPres}</td></tr>
+            <tr style="background:#FFF5E5; font-weight:700;"><td>Physical Present %</td><td>${pct(shifts.Morning.present, shifts.Morning.ops)}</td><td>${pct(shifts.General.present, shifts.General.ops)}</td><td>${pct(shifts.Day.present, shifts.Day.ops)}</td><td>${pct(shifts.PartTimer.present, shifts.PartTimer.ops)}</td><td>${pct(shifts.Night.present, shifts.Night.ops)}</td><td style="font-weight:800; color:#FF9500;">${pct(totalPres, totalOps)}</td></tr>
+            <tr><td>Week off %</td><td>${pct(shifts.Morning.off, shifts.Morning.roster)}</td><td>${pct(shifts.General.off, shifts.General.roster)}</td><td>${pct(shifts.Day.off, shifts.Day.roster)}</td><td>${pct(shifts.PartTimer.off, shifts.PartTimer.roster)}</td><td>${pct(shifts.Night.off, shifts.Night.roster)}</td><td style="font-weight:800;">${pct(totalOff, totalRoster)}</td></tr>
+            <tr><td>Leave %</td><td>${pct(shifts.Morning.leave, shifts.Morning.roster)}</td><td>${pct(shifts.General.leave, shifts.General.roster)}</td><td>${pct(shifts.Day.leave, shifts.Day.roster)}</td><td>${pct(shifts.PartTimer.leave, shifts.PartTimer.roster)}</td><td>${pct(shifts.Night.leave, shifts.Night.roster)}</td><td style="font-weight:800;">${pct(totalLeave, totalRoster)}</td></tr>
+            <tr style="background:#FFE5E5; color:var(--ios-red);"><td>Absenteeism %</td><td>${pct(shifts.Morning.absent, shifts.Morning.roster)}</td><td>${pct(shifts.General.absent, shifts.General.roster)}</td><td>${pct(shifts.Day.absent, shifts.Day.roster)}</td><td>${pct(shifts.PartTimer.absent, shifts.PartTimer.roster)}</td><td>${pct(shifts.Night.absent, shifts.Night.roster)}</td><td style="font-weight:800;">${pct(totalAbs, totalRoster)}</td></tr>
+            <tr style="background:var(--ios-bg); font-weight:700;"><td>Roster vs availability %</td><td>${availPct(shifts.Morning.present, shifts.Morning.roster)}</td><td>${availPct(shifts.General.present, shifts.General.roster)}</td><td>${availPct(shifts.Day.present, shifts.Day.roster)}</td><td>${availPct(shifts.PartTimer.present, shifts.PartTimer.roster)}</td><td>${availPct(shifts.Night.present, shifts.Night.roster)}</td><td style="font-weight:800;">${availPct(totalPres, totalRoster)}</td></tr>
         `;
     }
 
     function downloadThreePReportAsImage() {
         const targetTable = document.getElementById("threepTable");
-        showToast("Generating full format image...");
-
+        showToast("Generating image...");
         const sWidth = targetTable.scrollWidth;
         const sHeight = targetTable.scrollHeight;
 
-        html2canvas(targetTable, { 
-            scale: 2.5,                
-            useCORS: true, 
-            backgroundColor: "#ffffff",
-            width: sWidth,
-            height: sHeight,
-            windowWidth: sWidth,
-            windowHeight: sHeight
-        }).then(canvas => {
+        html2canvas(targetTable, { scale: 2.5, useCORS: true, backgroundColor: "#ffffff", width: sWidth, height: sHeight, windowWidth: sWidth, windowHeight: sHeight })
+        .then(canvas => {
             const imageLink = document.createElement("a");
-            imageLink.download = `3P_Attendance_Full_Report_${new Date().toISOString().split('T')[0]}.jpg`;
+            imageLink.download = `3P_Attendance_Report_${new Date().toISOString().split('T')[0]}.jpg`;
             imageLink.href = canvas.toDataURL("image/jpeg", 0.95); 
             document.body.appendChild(imageLink);
             imageLink.click();
             document.body.removeChild(imageLink);
             showToast("✓ Downloaded successfully!");
-        }).catch(err => { 
-            showToast("❌ Download Failed"); 
-        });
+        }).catch(() => showToast("❌ Download Failed"));
     }
 
     async function calculateDayWiseAttendance() {
@@ -1747,8 +1465,6 @@
         const currentMonthLabel = monthNames[operationalMonth];
 
         const container = document.getElementById("daywiseResultContainer");
-        container.innerHTML = "";
-        
         let htmlContent = "";
 
         for (let d = operationalDate; d >= 1; d--) {
@@ -1757,12 +1473,12 @@
 
             if (isToday) {
                 htmlContent += `
-                    <div class="shift-report-card" style="margin-bottom: 22px; border: 2px solid #1a73e8; box-shadow: 0 4px 15px rgba(26,115,232,0.15);">
-                        <div class="shift-title" style="background:#1a73e8; font-size: 15px; font-weight:700; padding: 14px;">
+                    <div class="shift-report-card" style="margin-bottom: 20px; border: 2px solid var(--ios-blue);">
+                        <div class="shift-title" style="background:var(--ios-blue); font-size: 16px;">
                             <span>🌟 Today's Live Status</span>
                             <span>${d} ${currentMonthLabel}</span>
                         </div>
-                        <div class="ops-metrics-list" style="padding: 12px;">
+                        <div class="ops-metrics-list">
                             <div class="ops-metric-row highlight-green" onclick="viewDayCategoryList(${d}, 'present', 'Actually Present on Floor')">Actually Present <span>${dayData.present.length}</span></div>
                             <div class="ops-metric-row highlight-orange" onclick="viewDayCategoryList(${d}, 'stillInPlan', 'Still in Plan (Waiting)')">Still in Plan (Waiting) <span>${dayData.stillInPlan.length}</span></div>
                             <div class="ops-metric-row highlight-red" onclick="viewDayCategoryList(${d}, 'absent', 'Absent List')">Absent Count <span>${dayData.absent.length}</span></div>
@@ -1770,27 +1486,26 @@
                             <div class="ops-metric-row" onclick="viewDayCategoryList(${d}, 'weekOff', 'Week Off List')">Week Offs <span>${dayData.weekOff.length}</span></div>
                         </div>
                     </div>
-                    <h3 style="font-size: 14px; color: var(--text-muted); margin: 15px 0 12px 4px; font-weight: bold; border-left: 3px solid var(--text-muted); padding-left: 8px;">📋 Historical Tracker</h3>
+                    <h3 style="font-size: 13px; color: var(--ios-text-muted); margin: 16px 0 10px 4px; font-weight: 700; text-transform: uppercase;">📋 Completed Summary</h3>
                 `;
             } else {
                 htmlContent += `
-                    <div class="shift-report-card" style="margin-bottom: 10px; background: #fafafa; border: 1px solid #e0e0e0;">
-                        <div class="shift-title" style="background:#5f6368; padding: 8px 12px; font-size: 13px;">
+                    <div class="shift-report-card" style="margin-bottom: 12px; background: #fff;">
+                        <div class="shift-title" style="background:rgba(118,118,128,0.7); padding: 10px 14px; font-size: 14px;">
                             <span>📅 Date: ${d} ${currentMonthLabel}</span>
-                            <span style="font-weight:normal; opacity:0.85;">Completed Summary</span>
+                            <span style="font-weight:600; opacity:0.9;">History</span>
                         </div>
-                        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 8px; text-align: center; font-size: 12px;">
-                            <div style="background:#e8f5e9; padding: 8px 4px; border-radius: 6px; cursor:pointer; font-weight:600; color:#2e7d32; border:1px solid #c8e6c9;" onclick="viewDayCategoryList(${d}, 'present', 'Present')">Pres<br><span style="font-size:14px;">${dayData.present.length}</span></div>
-                            <div style="background:#fff3e0; padding: 8px 4px; border-radius: 6px; cursor:pointer; font-weight:600; color:#e67e22; border:1px solid #ffe0b2;" onclick="viewDayCategoryList(${d}, 'stillInPlan', 'In Plan')">Plan<br><span style="font-size:14px;">${dayData.stillInPlan.length}</span></div>
-                            <div style="background:#fdeaea; padding: 8px 4px; border-radius: 6px; cursor:pointer; font-weight:600; color:#c62828; border:1px solid #ffcdd2;" onclick="viewDayCategoryList(${d}, 'absent', 'Absent')">Abs<br><span style="font-size:14px;">${dayData.absent.length}</span></div>
-                            <div style="background:#f3e5f5; padding: 8px 4px; border-radius: 6px; cursor:pointer; font-weight:600; color:#6a1b9a; border:1px solid #e1bee7;" onclick="viewDayCategoryList(${d}, 'leave', 'Leave')">Lv<br><span style="font-size:14px;">${dayData.leave.length}</span></div>
-                            <div style="background:#f1f3f4; padding: 8px 4px; border-radius: 6px; cursor:pointer; font-weight:600; color:#3c4043; border:1px solid #dcdcdc;" onclick="viewDayCategoryList(${d}, 'weekOff', 'Week Off')">Off<br><span style="font-size:14px;">${dayData.weekOff.length}</span></div>
+                        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 10px; text-align: center; font-size: 12px;">
+                            <div style="background:#E5F9E7; padding: 8px 4px; border-radius: 10px; cursor:pointer; font-weight:700; color:#34C759;" onclick="viewDayCategoryList(${d}, 'present', 'Present')">Pres<br><span style="font-size:15px;">${dayData.present.length}</span></div>
+                            <div style="background:#FFF5E5; padding: 8px 4px; border-radius: 10px; cursor:pointer; font-weight:700; color:#FF9500;" onclick="viewDayCategoryList(${d}, 'stillInPlan', 'In Plan')">Plan<br><span style="font-size:15px;">${dayData.stillInPlan.length}</span></div>
+                            <div style="background:#FFE5E5; padding: 8px 4px; border-radius: 10px; cursor:pointer; font-weight:700; color:#FF3B30;" onclick="viewDayCategoryList(${d}, 'absent', 'Absent')">Abs<br><span style="font-size:15px;">${dayData.absent.length}</span></div>
+                            <div style="background:#F3E8FF; padding: 8px 4px; border-radius: 10px; cursor:pointer; font-weight:700; color:#AF52DE;" onclick="viewDayCategoryList(${d}, 'leave', 'Leave')">Lv<br><span style="font-size:15px;">${dayData.leave.length}</span></div>
+                            <div style="background:var(--ios-bg); padding: 8px 4px; border-radius: 10px; cursor:pointer; font-weight:700; color:var(--ios-text-main);" onclick="viewDayCategoryList(${d}, 'weekOff', 'Week Off')">Off<br><span style="font-size:15px;">${dayData.weekOff.length}</span></div>
                         </div>
                     </div>
                 `;
             }
         }
-
         container.innerHTML = htmlContent;
         container.style.display = "block";
     }
@@ -1811,67 +1526,83 @@
         return { firstDayIndex, totalDays };
     }
 
+    // UPDATED ROSTER SEARCH: Uses current month automatically without dropdown selector!
     async function searchRoster() {  
         const id = document.getElementById("empid").value.trim();  
         const resultDiv = document.getElementById("result");  
-        const selectedMonth = parseInt(document.getElementById("monthSelect").value);
+        const { operationalMonth } = getOperationalDateInfo();
+        const selectedMonth = operationalMonth; // Directly takes current month!
 
-        if (id == "") { showToast("⚠️ Enter BA ID"); return; }  
+        if (id == "") { showToast("⚠️ Enter ID"); return; }  
 
         document.getElementById("searchBtn").disabled = true;  
         await loadRoster();  
 
         let emp = null;  
         for (let i = 1; i < roster.length; i++) {  
-            if (roster[i].length > colMap.id && String(roster[i][colMap.id]).trim() == id) { emp = roster[i]; break; }  
+            if (roster[i].length > colMap.id && String(roster[i][colMap.id]).trim() == id) { 
+                emp = roster[i]; 
+                break; 
+            }  
         }  
 
         if (emp == null) {  
-            resultDiv.innerHTML = "<div class='card'><h3 style='text-align:center; color: var(--text-muted);'>Employee ID Not Found</h3></div>";  
+            resultDiv.innerHTML = "<div class='card'><h3 style='text-align:center; color: var(--ios-text-muted);'>Employee ID Not Found</h3></div>";  
             showToast("❌ ID Not Found");  
             document.getElementById("searchBtn").disabled = false;
             return;  
         }  
 
         const { firstDayIndex, totalDays } = getMonthDetails(targetYear, selectedMonth);
-        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         const currentMonthLabel = monthNames[selectedMonth];  
 
-        let html = "<div class='card'>";  
-        html += "<div class='employeeName'>" + emp[colMap.name] + "</div>";  
-        html += "<div class='employeeId'><div><strong>ID :</strong> " + emp[colMap.id] + " | <strong>BA :</strong> " + (emp[colMap.ba] || emp[colMap.id]) + "</div><div><strong>Roster:</strong> " + currentMonthLabel + " " + targetYear + "</div></div>";  
-          
-        html += "<div class='calendar-header-grid'>";  
-        ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].forEach(day => { html += "<div class='weekday-label'>" + day + "</div>"; });  
-        html += "</div><div class='calendar'>";  
+        let html = `
+            <div class='card'>
+                <div class='employeeName'>${emp[colMap.name]}</div>
+                <div class='employeeId'>
+                    <span>BA ID: ${emp[colMap.id]}</span>
+                    <span style='color:var(--ios-blue); font-weight:700;'>🗓️ ${currentMonthLabel} ${targetYear}</span>
+                </div>
+                <div class='calendar-header-grid'>
+                    <div class='weekday-label'>Sun</div><div class='weekday-label'>Mon</div>
+                    <div class='weekday-label'>Tue</div><div class='weekday-label'>Wed</div>
+                    <div class='weekday-label'>Thu</div><div class='weekday-label'>Fri</div>
+                    <div class='weekday-label'>Sat</div>
+                </div>
+                <div class='calendar'>
+        `;
 
-        for (let b = 0; b < firstDayIndex; b++) { html += "<div class='blank-day'></div>"; }  
+        for (let i = 0; i < firstDayIndex; i++) {
+            html += "<div class='blank-day'></div>";
+        }
 
-        for (let d = 1; d <= totalDays; d++) {  
-            const dateString = String(d).padStart(2, '0') + " " + currentMonthLabel;  
-            const rosterIndex = colMap.days[d];   
-            let shift = (rosterIndex && rosterIndex < emp.length) ? String(emp[rosterIndex]).trim() : "";  
+        for (let day = 1; day <= totalDays; day++) {
+            const dayColIdx = colMap.days[day];
+            let shiftCode = "";
+            if (dayColIdx && dayColIdx < emp.length) {
+                shiftCode = String(emp[dayColIdx]).trim();
+            }
+            let cssClass = getColor(shiftCode);
+            if(!shiftCode) shiftCode = "-";
 
-            if (shift !== "") {  
-                html += "<div class='day " + getColor(shift) + "'><div class='day-date'>" + dateString + "</div><div class='shift-code'>" + shift + "</div></div>";  
-            } else {  
-                html += "<div class='day pending'><div class='day-date'>" + dateString + "</div><div class='updating-text'>Updating Soon</div></div>";  
-            }  
-        }  
+            html += `
+                <div class='day ${cssClass}'>
+                    <div class='day-date'>${day}</div>
+                    <div class='shift-code'>${shiftCode}</div>
+                </div>
+            `;
+        }
 
-        html += "</div></div>";  
-        resultDiv.innerHTML = html;  
-        showToast("✓ Loaded successfully");  
+        html += "</div></div>";
+        resultDiv.innerHTML = html;
         document.getElementById("searchBtn").disabled = false;
-    }  
+        showToast("✓ Roster Loaded Successfully");
+    }
 
-    document.getElementById("empid").addEventListener("keypress", function(e) {  
-        if (e.key === "Enter" && !document.getElementById("searchBtn").disabled) searchRoster();  
-    });  
-
-    initMonthLogic();
-    loadRoster();          
-</script>
-
+    window.onload = function() {
+        loadRoster();
+    };
+</script>  
 </body>  
 </html>
