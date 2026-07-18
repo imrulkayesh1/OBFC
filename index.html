@@ -112,20 +112,75 @@
             color: var(--ios-blue);
         }
 
-        .view-screen { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        /* ===== FLIP VIEWPORT ===== */
+        .view-port {
+            perspective: 1600px;
+            position: relative;
+        }
+
+        .view-screen {
+            display: none;
+            opacity: 0;
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+            transform-origin: center center;
+            will-change: transform, opacity, filter;
+        }
         .view-screen.active { display: block; opacity: 1; }
+
+        .view-screen.flip-exit {
+            display: block;
+            animation: flipOutGlass 0.36s cubic-bezier(0.55, 0.06, 0.68, 0.19) forwards;
+        }
+        .view-screen.flip-enter {
+            display: block;
+            animation: flipInGlass 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        @keyframes flipOutGlass {
+            0%   { transform: rotateY(0deg) scale(1); opacity: 1; filter: blur(0px) brightness(1); }
+            100% { transform: rotateY(-95deg) scale(0.92); opacity: 0; filter: blur(3px) brightness(1.15); }
+        }
+        @keyframes flipInGlass {
+            0%   { transform: rotateY(95deg) scale(0.92); opacity: 0; filter: blur(3px) brightness(1.15); }
+            60%  { filter: blur(0px) brightness(1); }
+            100% { transform: rotateY(0deg) scale(1); opacity: 1; filter: blur(0px) brightness(1); }
+        }
+
+        /* subtle glass sheen sweep during flip */
+        .view-port::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,0.55) 48%, rgba(255,255,255,0.15) 52%, transparent 70%);
+            background-size: 250% 250%;
+            background-position: 150% 50%;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 500;
+            border-radius: 20px;
+        }
+        .view-port.sheening::before {
+            animation: sheenSweep 0.7s ease;
+        }
+        @keyframes sheenSweep {
+            0%   { opacity: 0; background-position: 150% 50%; }
+            15%  { opacity: 1; }
+            60%  { opacity: 0.8; background-position: -50% 50%; }
+            100% { opacity: 0; background-position: -50% 50%; }
+        }
 
         /* iOS Card Component */
         .container { max-width: 850px; margin: auto; padding: 10px 16px; }  
         
         .card {  
             background: var(--ios-card-bg);  
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
             padding: 24px;  
-            border-radius: 20px;  
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);  
+            border-radius: 22px;  
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255,255,255,0.6);  
             margin-bottom: 20px;
         }  
 
@@ -172,10 +227,12 @@
             max-width: 380px;
             margin: 30px auto;
             padding: 30px 24px;
-            background: #ffffff;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
             border-radius: 24px;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.08);
-            border: 1px solid var(--ios-border);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.6);
+            border: 1px solid rgba(255,255,255,0.7);
         }
 
         .auth-title { font-size: 22px; font-weight: 700; margin-bottom: 20px; text-align: center; letter-spacing: -0.5px; }
@@ -200,10 +257,12 @@
 
         /* Admin & Ops Panels */
         .admin-panel-section {
-            background: #ffffff;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
             border-radius: 20px;
-            border: 1px solid var(--ios-border);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            border: 1px solid rgba(255,255,255,0.7);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.6);
             overflow: hidden;
             margin-bottom: 24px;
         }
@@ -243,18 +302,20 @@
         .ops-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 25px; }
         
         .ops-menu-card {
-            background: #fff;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
             padding: 20px;
             border-radius: 20px;
-            border: 1px solid var(--ios-border);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            border: 1px solid rgba(255,255,255,0.7);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.6);
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
             display: flex;
             align-items: center;
             gap: 16px;
         }
-        .ops-menu-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); border-color: var(--ios-blue); }
+        .ops-menu-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); border-color: var(--ios-blue); }
         
         .ops-icon-frame { font-size: 26px; width: 52px; height: 52px; background: rgba(0, 122, 255, 0.1); border-radius: 16px; display: flex; align-items: center; justify-content: center; }
         .ops-card-label { font-size: 16px; font-weight: 700; color: var(--ios-text-main); }
@@ -279,7 +340,7 @@
         .report-modal-window { max-width: 900px; width: 96%; }
 
         /* Ops Metrics Rows */
-        .shift-report-card { background: #fff; border-radius: 18px; border: 1px solid var(--ios-border); overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        .shift-report-card { background: rgba(255,255,255,0.75); backdrop-filter: blur(20px); border-radius: 18px; border: 1px solid rgba(255,255,255,0.7); overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
         .shift-title { font-size: 15px; font-weight: 700; color: #fff; display: flex; justify-content: space-between; background: var(--ios-blue); padding: 14px 18px; }
         .ops-metrics-list { display: flex; flex-direction: column; gap: 10px; padding: 16px; }
         
@@ -349,6 +410,8 @@
         <div class="slot-tab" id="slotOps" onclick="switchSlot('Ops')">⚙️ Ops Controls</div>
     </div>
 </div>
+
+<div class="view-port" id="viewPort">
 
 <div id="screenEmployee" class="view-screen active">
     <div class="container">  
@@ -432,6 +495,8 @@
             </div>
         </div>
     </div>
+</div>
+
 </div>
 
 <!-- Modal Overlays -->
@@ -583,6 +648,7 @@
 
     let activeLists = { rosterPlan:[], weekOff:[], leave:[], scheduledOps:[], stillInPlan:[], absent:[], present:[] };
     let currentSessionUser = null;
+    let isFlipping = false;
 
     // Secure Master Admin Credentials stored in LocalStorage for persistence
     function getAdminCredentials() {
@@ -592,25 +658,72 @@
         };
     }
 
+    // ===== FLIP TRANSITION ENGINE =====
+    // Animates the currently visible .view-screen out (like a glass card flipping
+    // away) and the target .view-screen in from the opposite side, with a soft
+    // glass "sheen" sweeping across the viewport mid-flip.
+    function flipToScreen(nextScreenEl, afterSwapCallback) {
+        const viewPort = document.getElementById("viewPort");
+        const allScreens = viewPort.querySelectorAll(".view-screen");
+        let currentScreenEl = null;
+        allScreens.forEach(s => { if (s.classList.contains("active")) currentScreenEl = s; });
+
+        if (isFlipping) return;
+        if (currentScreenEl === nextScreenEl) {
+            if (typeof afterSwapCallback === "function") afterSwapCallback();
+            return;
+        }
+
+        isFlipping = true;
+        viewPort.classList.add("sheening");
+
+        if (!currentScreenEl) {
+            // Nothing currently shown, just fade the target straight in
+            allScreens.forEach(s => { s.classList.remove("active", "flip-exit", "flip-enter"); });
+            nextScreenEl.classList.add("active");
+            if (typeof afterSwapCallback === "function") afterSwapCallback();
+            isFlipping = false;
+            return;
+        }
+
+        currentScreenEl.classList.remove("active");
+        currentScreenEl.classList.add("flip-exit");
+
+        currentScreenEl.addEventListener("animationend", function outHandler() {
+            currentScreenEl.removeEventListener("animationend", outHandler);
+            currentScreenEl.classList.remove("flip-exit");
+
+            if (typeof afterSwapCallback === "function") afterSwapCallback();
+
+            nextScreenEl.classList.add("flip-enter");
+            nextScreenEl.addEventListener("animationend", function inHandler() {
+                nextScreenEl.removeEventListener("animationend", inHandler);
+                nextScreenEl.classList.remove("flip-enter");
+                nextScreenEl.classList.add("active");
+                viewPort.classList.remove("sheening");
+                isFlipping = false;
+            });
+        });
+    }
+
     function switchSlot(targetSlot) {
         document.getElementById("slotEmp").classList.remove("active");
         document.getElementById("slotOps").classList.remove("active");
-        
-        document.getElementById("screenEmployee").classList.remove("active");
-        document.getElementById("screenAuthGate").classList.remove("active");
-        document.getElementById("screenOpsDashboard").classList.remove("active");
 
-        if(targetSlot === 'Employee') {
+        const screenEmployee = document.getElementById("screenEmployee");
+        const screenAuthGate = document.getElementById("screenAuthGate");
+        const screenOpsDashboard = document.getElementById("screenOpsDashboard");
+
+        if (targetSlot === 'Employee') {
             document.getElementById("slotEmp").classList.add("active");
-            document.getElementById("screenEmployee").classList.add("active");
-        } else if(targetSlot === 'Ops') {
+            flipToScreen(screenEmployee);
+        } else if (targetSlot === 'Ops') {
             document.getElementById("slotOps").classList.add("active");
-            if(currentSessionUser) {
-                document.getElementById("screenOpsDashboard").classList.add("active");
-                renderAdminPanelIfRequired();
+            if (currentSessionUser) {
+                flipToScreen(screenOpsDashboard, () => renderAdminPanelIfRequired());
             } else {
-                document.getElementById("screenAuthGate").classList.add("active");
                 renderAuthView('login');
+                flipToScreen(screenAuthGate);
             }
         }
     }
@@ -639,7 +752,7 @@
                 <div class="auth-title">📝 Register New User</div>
                 <div class="auth-form-group">
                     <label>Desired User ID</label>
-                    <input type="text" id="regUid" placeholder="e.g. Imrul" autocomplete="off">
+                    <input type="text" id="regUid" placeholder="Type your User Id" autocomplete="off">
                 </div>
                 <div class="auth-form-group">
                     <label>Choose Password</label>
@@ -654,7 +767,7 @@
         } else if(mode === 'forgot') {
             authBox.innerHTML = `
                 <div class="auth-title">🔒 Password Recovery</div>
-                <p style="font-size:13px; color:var(--ios-text-muted); margin-bottom:16px; line-height:1.4;">নিরাপত্তার স্বার্থে অন্যের পাসওয়ার্ড দেখা বা রিসেট করা নিষিদ্ধ। আপনার পাসওয়ার্ড ভুলে গেলে আপনার User ID লিখে রিকোয়েস্ট পাঠান অথবা সরাসরি অ্যাডমিনের সাথে যোগাযোগ করুন।</p>
+                <p style="font-size:13px; color:var(--ios-text-muted); margin-bottom:16px; line-height:1.4;">নিরাপত্তার স্বার্থে অন্যের পাসওয়ার্ড দেখা বা রিসেট করা নিষিদ্ধ। আপনার পাসওয়ার্ড ভুলে গেলে আপনার User ID লিখে রিকোয়েস্ট পাঠান অথবা সরাসরি অ্যাডমিনের সাথে যোগাযোগ করুন।</p>
                 <div class="auth-form-group">
                     <label>Enter Registered User ID</label>
                     <input type="text" id="forgotUid" placeholder="Enter User ID" autocomplete="off">
@@ -677,6 +790,7 @@
         const adminCreds = getAdminCredentials();
         if(uid === adminCreds.uid.toLowerCase() && pass === adminCreds.pass) {
             currentSessionUser = "MASTER_ADMIN";
+            localStorage.setItem("active_ops_user", currentSessionUser); // Save for persistence
             showToast("🛡️ Master Session Authorized");
             switchSlot('Ops');
             return;
@@ -693,7 +807,7 @@
                 if(user.Password === pass) {
                     if(user.Status.toLowerCase() === "approved") {
                         currentSessionUser = uid;
-                        // Removed First Login Forced Password Reset logic
+                        localStorage.setItem("active_ops_user", currentSessionUser); // Save for persistence
                         showToast("✓ Authentication Successful");
                         switchSlot('Ops');
                     } else {
@@ -735,7 +849,7 @@
                 method: 'POST',
                 headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    data: [{ "UserID": uidInput, "Password": passInput, "Status": "Pending", "FirstLogin": "false" }] // Changed default to false
+                    data: [{ "UserID": uidInput, "Password": passInput, "Status": "Pending", "FirstLogin": "false" }]
                 })
             });
             
@@ -842,7 +956,6 @@
         }
     }
 
-    // Admin Super Powers: Edit User Credentials
     function openAdminEditUserModal(uid, currentPass) {
         document.getElementById("editTargetOriginalUid").value = uid;
         document.getElementById("editTargetNewUid").value = uid;
@@ -884,7 +997,6 @@
         }
     }
 
-    // Admin Super Powers: Update Master Admin Credentials
     function openAdminSecurityModal() {
         const creds = getAdminCredentials();
         document.getElementById("newAdminIdInput").value = creds.uid;
@@ -1010,6 +1122,7 @@
 
     function logoutOps() {
         currentSessionUser = null;
+        localStorage.removeItem("active_ops_user"); // Remove persistent login token
         showToast("🔒 Session terminated safely.");
         switchSlot('Ops');
     }
@@ -1346,7 +1459,10 @@
 
             let targetShiftKey = null;
 
-            if (val.startsWith("DS3") || val.startsWith("P") || ((val.startsWith("DA1") || val.startsWith("DS2")) && isStillInPlan)) {
+            // DS3 (and any "P"-prefixed code) is ALWAYS Part Timer, regardless of status
+            // (roster/off/leave/absent/present all counted under Part Timer for these).
+            // DS1 / DS2 always fall under Day shift instead - they are never routed to Part Timer.
+            if (val.startsWith("DS3") || val.startsWith("P")) {
                 targetShiftKey = "PartTimer";
             } else if (pfx === "M") targetShiftKey = "Morning";
             else if (pfx === "G") targetShiftKey = "General";
@@ -1371,18 +1487,15 @@
             totalOps += shifts[k].ops; totalAbs += shifts[k].absent; totalPres += shifts[k].present;
         });
 
-        // Basic standard percentage helper
+        // Standard percentage helper - used for ALL % rows now
         const pct = (num, den) => den > 0 ? Math.round((num / den) * 100) + "%" : "0%";
-        
-        // Custom Physical Present calculation helper (100% - (Leave% - Absent%))
-        const physPct = (leave, absent, ops) => {
-            if (ops <= 0) return "0%";
-            let lPct = (leave / ops) * 100;
-            let aPct = (absent / ops) * 100;
-            return Math.round(100 - (lPct - aPct)) + "%";
-        };
 
-        // All Custom Formula Row Updates Added Here
+        // Updated Formula Rows:
+        // Physical Present %      = Present on Floor / Planned by OPS
+        // Week off %               = Week Off / Roster
+        // Leave Approved %         = Leave Approved / Planned by OPS
+        // Absenteeism %            = Absenteeism / Planned by OPS
+        // Roster V/S Availability %= Present on Floor / Planned by OPS
         document.getElementById("threepTableBody").innerHTML = `
             <tr><td>Roster</td><td>${shifts.Morning.roster}</td><td>${shifts.General.roster}</td><td>${shifts.Day.roster}</td><td>${shifts.PartTimer.roster}</td><td>${shifts.Night.roster}</td><td style="background:var(--ios-bg); font-weight:800;">${totalRoster}</td></tr>
             <tr><td>Week Off</td><td>${shifts.Morning.off}</td><td>${shifts.General.off}</td><td>${shifts.Day.off}</td><td>${shifts.PartTimer.off}</td><td>${shifts.Night.off}</td><td style="background:var(--ios-bg); font-weight:800;">${totalOff}</td></tr>
@@ -1390,11 +1503,11 @@
             <tr style="background:#E5F9E7;"><td>Planned by OPS</td><td>${shifts.Morning.ops}</td><td>${shifts.General.ops}</td><td>${shifts.Day.ops}</td><td>${shifts.PartTimer.ops}</td><td>${shifts.Night.ops}</td><td style="font-weight:800; color:#34C759;">${totalOps}</td></tr>
             <tr><td>Absenteeism</td><td>${shifts.Morning.absent}</td><td>${shifts.General.absent}</td><td>${shifts.Day.absent}</td><td>${shifts.PartTimer.absent}</td><td>${shifts.Night.absent}</td><td style="background:var(--ios-bg); font-weight:800;">${totalAbs}</td></tr>
             <tr style="background:#FFF5E5;"><td>Present on Floor</td><td>${shifts.Morning.present}</td><td>${shifts.General.present}</td><td>${shifts.Day.present}</td><td>${shifts.PartTimer.present}</td><td>${shifts.Night.present}</td><td style="font-weight:800; color:#FF9500;">${totalPres}</td></tr>
-            <tr style="background:#FFF5E5; font-weight:700;"><td>Physical Present %</td><td>${physPct(shifts.Morning.leave, shifts.Morning.absent, shifts.Morning.ops)}</td><td>${physPct(shifts.General.leave, shifts.General.absent, shifts.General.ops)}</td><td>${physPct(shifts.Day.leave, shifts.Day.absent, shifts.Day.ops)}</td><td>${physPct(shifts.PartTimer.leave, shifts.PartTimer.absent, shifts.PartTimer.ops)}</td><td>${physPct(shifts.Night.leave, shifts.Night.absent, shifts.Night.ops)}</td><td style="font-weight:800; color:#FF9500;">${physPct(totalLeave, totalAbs, totalOps)}</td></tr>
+            <tr style="background:#FFF5E5; font-weight:700;"><td>Physical Present %</td><td>${pct(shifts.Morning.present, shifts.Morning.ops)}</td><td>${pct(shifts.General.present, shifts.General.ops)}</td><td>${pct(shifts.Day.present, shifts.Day.ops)}</td><td>${pct(shifts.PartTimer.present, shifts.PartTimer.ops)}</td><td>${pct(shifts.Night.present, shifts.Night.ops)}</td><td style="font-weight:800; color:#FF9500;">${pct(totalPres, totalOps)}</td></tr>
             <tr><td>Week off %</td><td>${pct(shifts.Morning.off, shifts.Morning.roster)}</td><td>${pct(shifts.General.off, shifts.General.roster)}</td><td>${pct(shifts.Day.off, shifts.Day.roster)}</td><td>${pct(shifts.PartTimer.off, shifts.PartTimer.roster)}</td><td>${pct(shifts.Night.off, shifts.Night.roster)}</td><td style="font-weight:800;">${pct(totalOff, totalRoster)}</td></tr>
             <tr><td>Leave Approved %</td><td>${pct(shifts.Morning.leave, shifts.Morning.ops)}</td><td>${pct(shifts.General.leave, shifts.General.ops)}</td><td>${pct(shifts.Day.leave, shifts.Day.ops)}</td><td>${pct(shifts.PartTimer.leave, shifts.PartTimer.ops)}</td><td>${pct(shifts.Night.leave, shifts.Night.ops)}</td><td style="font-weight:800;">${pct(totalLeave, totalOps)}</td></tr>
             <tr style="background:#FFE5E5; color:var(--ios-red);"><td>Absenteeism %</td><td>${pct(shifts.Morning.absent, shifts.Morning.ops)}</td><td>${pct(shifts.General.absent, shifts.General.ops)}</td><td>${pct(shifts.Day.absent, shifts.Day.ops)}</td><td>${pct(shifts.PartTimer.absent, shifts.PartTimer.ops)}</td><td>${pct(shifts.Night.absent, shifts.Night.ops)}</td><td style="font-weight:800;">${pct(totalAbs, totalOps)}</td></tr>
-            <tr style="background:var(--ios-bg); font-weight:700;"><td>Roster V/S Availability %</td><td>${pct(shifts.Morning.present, shifts.Morning.roster)}</td><td>${pct(shifts.General.present, shifts.General.roster)}</td><td>${pct(shifts.Day.present, shifts.Day.roster)}</td><td>${pct(shifts.PartTimer.present, shifts.PartTimer.roster)}</td><td>${pct(shifts.Night.present, shifts.Night.roster)}</td><td style="font-weight:800;">${pct(totalPres, totalRoster)}</td></tr>
+            <tr style="background:var(--ios-bg); font-weight:700;"><td>Roster V/S Availability %</td><td>${pct(shifts.Morning.present, shifts.Morning.ops)}</td><td>${pct(shifts.General.present, shifts.General.ops)}</td><td>${pct(shifts.Day.present, shifts.Day.ops)}</td><td>${pct(shifts.PartTimer.present, shifts.PartTimer.ops)}</td><td>${pct(shifts.Night.present, shifts.Night.ops)}</td><td style="font-weight:800;">${pct(totalPres, totalOps)}</td></tr>
         `;
     }
 
@@ -1469,23 +1582,7 @@
         container.style.display = "block";
     }
 
-    function getColor(shift) {  
-        const s = String(shift).trim().toUpperCase();  
-        if (!s) return "pending";  
-        if (s.endsWith("P")) return "present";  
-        if (s.endsWith("SO") || s.includes("OFF")) return "off";  
-        if (s.endsWith("L") || s.includes("CL") || s.includes("EL")) return "leave";  
-        if (s.endsWith("A") || s === "MA" || s === "GA" || s === "DA" || s === "NA" || s === "PA") return "absent-day";  
-        return "other";  
-    }  
-
-    function getMonthDetails(year, monthIndex) {
-        const firstDayIndex = new Date(year, monthIndex, 1).getDay();
-        const totalDays = new Date(year, monthIndex + 1, 0).getDate();
-        return { firstDayIndex, totalDays };
-    }
-
-    // INTERNAL BACKGROUND AUTO-REFRESH SYSTEM
+    // INTERNAL BACKGROUND AUTO-REFRESH SYSTEM (5 Seconds)
     setInterval(async () => {
         try {
             const cacheBuster = "&_ts=" + new Date().getTime();  
@@ -1494,157 +1591,158 @@
             const cleanRows = txt.replace(/\r/g, "").split("\n");
             roster = cleanRows.filter(row => row.trim() !== "").map(r => parseCSVLine(r));  
             
-            // Silently update Employee View if it is currently open
+            // Silently update Employee View if it is currently open and has a loaded result
             if (document.getElementById("slotEmp").classList.contains("active") && document.getElementById("empid").value.trim() !== "" && document.getElementById("result").innerHTML.trim() !== "") {
                 silentSearchRoster();
             }
         } catch (err) {
             console.log("Silent background data sync failed.");
         }
-    }, 10000); // 10 Seconds internally refreshes
+    }, 5000); // Changed to 5000ms (5 Seconds)
 
     function silentSearchRoster() {
-        const id = document.getElementById("empid").value.trim();  
-        const resultDiv = document.getElementById("result");  
-        const { operationalMonth } = getOperationalDateInfo();
-        const selectedMonth = operationalMonth; 
-
-        if (id == "") return;  
-
-        let emp = null;  
-        for (let i = 1; i < roster.length; i++) {  
-            if (roster[i].length > colMap.id && String(roster[i][colMap.id]).trim() == id) { 
-                emp = roster[i]; 
-                break; 
-            }  
-        }  
-
-        if (emp == null) return;
-
-        const { firstDayIndex, totalDays } = getMonthDetails(targetYear, selectedMonth);
-        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        const monthShortNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        const currentMonthLabel = monthNames[selectedMonth];  
-        const monthStr = monthShortNames[selectedMonth];
-
-        let html = `
-            <div class='card'>
-                <div class='employeeName'>${emp[colMap.name]}</div>
-                <div class='employeeId'>
-                    <span>BA ID: ${emp[colMap.id]}</span>
-                    <span style='color:var(--ios-blue); font-weight:700;'>🗓️ ${currentMonthLabel} ${targetYear}</span>
-                </div>
-                <div class='calendar-header-grid'>
-                    <div class='weekday-label'>Sun</div><div class='weekday-label'>Mon</div>
-                    <div class='weekday-label'>Tue</div><div class='weekday-label'>Wed</div>
-                    <div class='weekday-label'>Thu</div><div class='weekday-label'>Fri</div>
-                    <div class='weekday-label'>Sat</div>
-                </div>
-                <div class='calendar'>
-        `;
-
-        for (let i = 0; i < firstDayIndex; i++) {
-            html += "<div class='blank-day'></div>";
-        }
-
-        for (let day = 1; day <= totalDays; day++) {
-            const dayColIdx = colMap.days[day];
-            let shiftCode = "";
-            if (dayColIdx && dayColIdx < emp.length) {
-                shiftCode = String(emp[dayColIdx]).trim();
+        const empInput = document.getElementById("empid").value.trim().toUpperCase();
+        if (!empInput) return;
+        
+        let matchedEmp = null;
+        for (let i = 1; i < roster.length; i++) {
+            if (roster[i] && String(roster[i][colMap.ba]).trim().toUpperCase() === empInput) {
+                matchedEmp = roster[i];
+                break;
             }
-            let cssClass = getColor(shiftCode);
-            if(!shiftCode) shiftCode = "-";
-
-            html += `
-                <div class='day ${cssClass}'>
-                    <div class='day-date' style='font-size: 13px;'>${day} ${monthStr}</div>
-                    <div class='shift-code'>${shiftCode}</div>
-                </div>
-            `;
         }
-        html += "</div></div>";
-        resultDiv.innerHTML = html;
+        
+        if (matchedEmp) {
+            renderCalendarUI(matchedEmp);
+        }
     }
 
-    // ORIGINAL SEARCH BUTTON LOGIC 
-    async function searchRoster() {  
-        const id = document.getElementById("empid").value.trim();  
-        const resultDiv = document.getElementById("result");  
-        const { operationalMonth } = getOperationalDateInfo();
-        const selectedMonth = operationalMonth; 
+    // MODERN SEARCH SYSTEM
+    async function searchRoster() {
+        const empInput = document.getElementById("empid").value.trim().toUpperCase();
+        const resultBox = document.getElementById("result");
+        
+        if (!empInput) {
+            showToast("⚠️ Please enter a valid Employee BA ID!");
+            return;
+        }
+        
+        document.getElementById("searchBtn").disabled = true;
 
-        if (id == "") { showToast("⚠️ Enter ID"); return; }  
+        if (roster.length === 0) {
+            showToast("🔄 Fetching live database matrix...");
+            await loadRoster();
+        }
+        
+        let matchedEmp = null;
+        for (let i = 1; i < roster.length; i++) {
+            if (roster[i] && String(roster[i][colMap.ba]).trim().toUpperCase() === empInput) {
+                matchedEmp = roster[i];
+                break;
+            }
+        }
+        
+        document.getElementById("searchBtn").disabled = false;
 
-        document.getElementById("searchBtn").disabled = true;  
-        await loadRoster();  
+        if (!matchedEmp) {
+            resultBox.innerHTML = `
+                <div class="card" style="text-align:center; padding:30px; color:var(--ios-red);">
+                    <p style="font-size:18px; font-weight:700;">❌ BA ID Not Found</p>
+                    <p style="font-size:14px; color:var(--ios-text-muted); margin-top:5px;">Please check the ID or contact your operations administrator.</p>
+                </div>
+            `;
+            showToast("❌ ID Not Found");
+            return;
+        }
+        
+        renderCalendarUI(matchedEmp);
+        showToast("✓ Roster Loaded Successfully");
+    }
 
-        let emp = null;  
-        for (let i = 1; i < roster.length; i++) {  
-            if (roster[i].length > colMap.id && String(roster[i][colMap.id]).trim() == id) { 
-                emp = roster[i]; 
-                break; 
-            }  
-        }  
-
-        if (emp == null) {  
-            resultDiv.innerHTML = "<div class='card'><h3 style='text-align:center; color: var(--ios-text-muted);'>Employee ID Not Found</h3></div>";  
-            showToast("❌ ID Not Found");  
-            document.getElementById("searchBtn").disabled = false;
-            return;  
-        }  
-
-        const { firstDayIndex, totalDays } = getMonthDetails(targetYear, selectedMonth);
+    function renderCalendarUI(empData) {
+        const resultBox = document.getElementById("result");
+        const empName = empData[colMap.name] || "Unknown Associate";
+        const empId = empData[colMap.id] || "N/A";
+        
+        const now = new Date();
         const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         const monthShortNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        const currentMonthLabel = monthNames[selectedMonth];  
-        const monthStr = monthShortNames[selectedMonth];
-
-        let html = `
-            <div class='card'>
-                <div class='employeeName'>${emp[colMap.name]}</div>
-                <div class='employeeId'>
-                    <span>BA ID: ${emp[colMap.id]}</span>
-                    <span style='color:var(--ios-blue); font-weight:700;'>🗓️ ${currentMonthLabel} ${targetYear}</span>
-                </div>
-                <div class='calendar-header-grid'>
-                    <div class='weekday-label'>Sun</div><div class='weekday-label'>Mon</div>
-                    <div class='weekday-label'>Tue</div><div class='weekday-label'>Wed</div>
-                    <div class='weekday-label'>Thu</div><div class='weekday-label'>Fri</div>
-                    <div class='weekday-label'>Sat</div>
-                </div>
-                <div class='calendar'>
-        `;
-
+        const { operationalMonth, operationalYear } = getOperationalDateInfo();
+        const monthStr = monthShortNames[operationalMonth];
+        
+        const firstDayIndex = new Date(operationalYear, operationalMonth, 1).getDay(); 
+        const totalDaysInMonth = new Date(operationalYear, operationalMonth + 1, 0).getDate();
+        
+        let calendarDaysHtml = "";
+        
         for (let i = 0; i < firstDayIndex; i++) {
-            html += "<div class='blank-day'></div>";
+            calendarDaysHtml += `<div class="blank-day"></div>`;
         }
-
-        for (let day = 1; day <= totalDays; day++) {
-            const dayColIdx = colMap.days[day];
-            let shiftCode = "";
-            if (dayColIdx && dayColIdx < emp.length) {
-                shiftCode = String(emp[dayColIdx]).trim();
-            }
-            let cssClass = getColor(shiftCode);
-            if(!shiftCode) shiftCode = "-";
-
-            html += `
-                <div class='day ${cssClass}'>
-                    <div class='day-date' style='font-size: 13px;'>${day} ${monthStr}</div>
-                    <div class='shift-code'>${shiftCode}</div>
+        
+        for (let day = 1; day <= totalDaysInMonth; day++) {
+            const dayCol = colMap.days[day];
+            let shiftRaw = dayCol && empData[dayCol] ? String(empData[dayCol]).trim().toUpperCase() : "";
+            
+            let customClass = "pending";
+            if (!shiftRaw || shiftRaw === "-" || shiftRaw === ">") customClass = "leave";
+            else if (shiftRaw.endsWith("SO") || shiftRaw.includes("OFF")) customClass = "off";
+            else if (shiftRaw.endsWith("CL") || shiftRaw.endsWith("PL") || shiftRaw.endsWith("EL") || shiftRaw.endsWith("AL") || shiftRaw.endsWith("L")) customClass = "leave";
+            else if (shiftRaw.startsWith("M")) customClass = "ms";
+            else if (shiftRaw.startsWith("G")) customClass = "pending"; 
+            else if (shiftRaw.startsWith("D")) customClass = "ds";
+            else if (shiftRaw.startsWith("N")) customClass = "ns";
+            
+            if (shiftRaw.endsWith("P")) customClass = "present";
+            if (shiftRaw.endsWith("A")) customClass = "absent-day";
+            
+            calendarDaysHtml += `
+                <div class="day ${customClass}">
+                    <div class="day-date" style="font-size: 13px;">${day} ${monthStr}</div>
+                    <div class="shift-code">${shiftRaw || "-"}</div>
                 </div>
             `;
         }
-
-        html += "</div></div>";
-        resultDiv.innerHTML = html;
-        document.getElementById("searchBtn").disabled = false;
-        showToast("✓ Roster Loaded Successfully");
+        
+        resultBox.innerHTML = `
+            <div class="card">
+                <div class="employeeName">${empName}</div>
+                <div class="employeeId">
+                    <span>BA ID: ${empId}</span>
+                    <span style='color:var(--ios-blue); font-weight:700;'>🗓️ ${monthNames[operationalMonth]} ${operationalYear}</span>
+                </div>
+                
+                <div class="calendar-header-grid">
+                    <div class="weekday-label">Sun</div><div class="weekday-label">Mon</div>
+                    <div class="weekday-label">Tue</div><div class="weekday-label">Wed</div>
+                    <div class="weekday-label">Thu</div><div class="weekday-label">Fri</div>
+                    <div class="weekday-label">Sat</div>
+                </div>
+                
+                <div class="calendar">
+                    ${calendarDaysHtml}
+                </div>
+            </div>
+        `;
     }
 
     window.onload = function() {
         loadRoster();
+        
+        // Load persistent login token if it exists
+        const savedUser = localStorage.getItem("active_ops_user");
+        if (savedUser) {
+            currentSessionUser = savedUser;
+        }
+
+        // Add Enter key trigger for search box
+        const empidInput = document.getElementById("empid");
+        if (empidInput) {
+            empidInput.addEventListener("keyup", (event) => {
+                if (event.key === "Enter") {
+                    searchRoster();
+                }
+            });
+        }
     };
 </script>  
 </body>  
